@@ -672,7 +672,8 @@
           },
           "settings": {
             "label": {
-              "check_description": "Check description"
+              "check_description": "Check description",
+              "check_tracked": "Check tracker bindings (same external tracker entry)"
             }
           }
         }

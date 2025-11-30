@@ -45,17 +45,22 @@ export const LibraryDuplicates = () => {
         false,
     );
 
+    const [checkTrackedBySameTracker, setCheckTrackedBySameTracker] = useLocalStorage(
+        'libraryDuplicatesCheckTrackedBySameTracker',
+        false,
+    );
+
     useAppTitleAndAction(
         t('library.settings.advanced.duplicates.label.title'),
         <>
             <GridLayouts gridLayout={gridLayout} onChange={setGridLayout} />
             <PopupState variant="popover" popupId="library-dupliactes-settings">
-                {(popupState) => (
+                {(popupstate) => (
                     <>
-                        <IconButton {...bindTrigger(popupState)} color="inherit">
+                        <IconButton {...bindTrigger(popupstate)} color="inherit">
                             <SettingsIcon />
                         </IconButton>
-                        <Menu {...bindMenu(popupState)}>
+                        <Menu {...bindMenu(popupstate)}>
                             <MenuItem>
                                 <CheckboxInput
                                     label={t('library.settings.advanced.duplicates.settings.label.check_description')}
@@ -63,12 +68,19 @@ export const LibraryDuplicates = () => {
                                     onChange={(_, checked) => setCheckAlternativeTitles(checked)}
                                 />
                             </MenuItem>
+                            <MenuItem>
+                                <CheckboxInput
+                                    label={t('library.settings.advanced.duplicates.settings.label.check_tracked')}
+                                    checked={checkTrackedBySameTracker}
+                                    onChange={(_, checked) => setCheckTrackedBySameTracker(checked)}
+                                />
+                            </MenuItem>
                         </Menu>
                     </>
                 )}
             </PopupState>
         </>,
-        [t, gridLayout, checkAlternativeTitles],
+        [t, gridLayout, checkAlternativeTitles, checkTrackedBySameTracker],
     );
 
     const { data, loading, error, refetch } = requestManager.useGetMangas<
@@ -96,10 +108,15 @@ export const LibraryDuplicates = () => {
             setMangasByTitle(event.data);
             setIsCheckingForDuplicates(false);
         };
-        worker.postMessage({ mangas: libraryMangas, checkAlternativeTitles } satisfies LibraryDuplicatesWorkerInput);
+        // include the new flag in worker input
+        worker.postMessage({
+            mangas: libraryMangas,
+            checkAlternativeTitles,
+            checkTrackedBySameTracker,
+        } satisfies LibraryDuplicatesWorkerInput);
 
         return () => worker.terminate();
-    }, [data?.mangas.nodes, checkAlternativeTitles]);
+    }, [data?.mangas.nodes, checkAlternativeTitles, checkTrackedBySameTracker]);
 
     const duplicatedTitles = useMemo(
         () => Object.keys(mangasByTitle).toSorted((titleA, titleB) => titleA.localeCompare(titleB)),

@@ -43,7 +43,11 @@ export interface LibraryOptions {
     hasStatus: Record<MangaStatus, NullAndUndefined<boolean>>;
 }
 
-export type TMangaDuplicate = Pick<MangaType, 'id' | 'title' | 'description'>;
+export type TMangaDuplicate = Pick<MangaType, 'id' | 'title' | 'description'> & {
+    trackRecords?: {
+        nodes: Pick<MangaType['trackRecords']['nodes'][number], 'id' | 'trackerId' | 'remoteId' | 'remoteTitle'>[];
+    } | null;
+};
 
 export type TMangaDuplicates<Manga> = Record<string, Manga[]>;
 
@@ -52,6 +56,7 @@ export type TMangaDuplicateResult<Manga> = { byTitle: Manga[]; byAlternativeTitl
 export type LibraryDuplicatesWorkerInput<Manga extends TMangaDuplicate = TMangaDuplicate> = {
     mangas: Manga[];
     checkAlternativeTitles: boolean;
+    checkTrackedBySameTracker?: boolean;
 };
 
 export type LibraryDuplicatesDescriptionWorkerInput<Manga extends TMangaDuplicate = TMangaDuplicate> = {
