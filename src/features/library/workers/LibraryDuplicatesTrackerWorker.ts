@@ -32,12 +32,13 @@ self.onmessage = (event: MessageEvent<{ mangas: TMangaDuplicate[] }>) => {
 
     // Keep deterministic order by sorting keys
     const keys = Object.keys(map).sort();
-    for (const key of keys) {
+    for (let k = 0; k < keys.length; k += 1) {
+        const key = keys[k];
         const group = map[key];
         // dedupe mangas inside the group by id while preserving order
         const uniqueById: TMangaDuplicate[] = [];
         const seenInGroup = new Set<string>();
-        for (let i = 0; i < group.length; i++) {
+        for (let i = 0; i < group.length; i += 1) {
             const m = group[i];
             const id = String(m.id);
             if (!seenInGroup.has(id)) {
@@ -47,18 +48,24 @@ self.onmessage = (event: MessageEvent<{ mangas: TMangaDuplicate[] }>) => {
         }
 
         // filter out mangas already assigned to previous groups
-        const remaining = uniqueById.filter((m) => !usedIds.has(String(m.id)));
+        const remaining: TMangaDuplicate[] = [];
+        for (let i = 0; i < uniqueById.length; i += 1) {
+            const m = uniqueById[i];
+            const id = String(m.id);
+            if (!usedIds.has(id)) {
+                remaining.push(m);
+            }
+        }
 
         if (remaining.length > 1) {
-            // Prefer the remoteTitle for the tracker entry name, fall back to remoteId/trackerId if absent
             const firstNode = remaining[0].trackRecords?.nodes?.[0];
-            const entryName =
-                firstNode?.remoteTitle ??
-                firstNode?.remoteId ??
-                `${firstNode?.trackerId ?? 'unknown'}:${firstNode?.remoteId ?? ''}`;
-            const prettifiedKey = `${entryName} (${key})`;
+            const trackerId = firstNode?.trackerId ?? 'unknown';
+            const remoteId = firstNode?.remoteId ?? '';
+            const prettifiedKey = `${trackerId}:${remoteId} (${key})`;
             result[prettifiedKey] = remaining;
-            remaining.forEach((m) => usedIds.add(String(m.id)));
+            for (let i = 0; i < remaining.length; i += 1) {
+                usedIds.add(String(remaining[i].id));
+            }
         }
     }
 

@@ -45,7 +45,7 @@ export interface LibraryOptions {
 
 export type TMangaDuplicate = Pick<MangaType, 'id' | 'title' | 'description'> & {
     trackRecords?: {
-        nodes: Pick<MangaType['trackRecords']['nodes'][number], 'id' | 'trackerId' | 'remoteId' | 'remoteTitle'>[];
+        nodes: Pick<MangaType['trackRecords']['nodes'][number], 'id' | 'trackerId' | 'remoteId'>[];
     } | null;
 };
 

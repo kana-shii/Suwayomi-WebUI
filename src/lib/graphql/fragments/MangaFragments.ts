@@ -194,7 +194,6 @@ export const MANGA_LIBRARY_DUPLICATE_SCREEN_FIELDS = gql`
                 id
                 trackerId
                 remoteId
-                remoteTitle
             }
         }
     }
