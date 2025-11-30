@@ -50,39 +50,6 @@ export const LibraryDuplicates = () => {
         false,
     );
 
-    useAppTitleAndAction(
-        t('library.settings.advanced.duplicates.label.title'),
-        <>
-            <GridLayouts gridLayout={gridLayout} onChange={setGridLayout} />
-            <PopupState variant="popover" popupId="library-dupliactes-settings">
-                {(popupstate) => (
-                    <>
-                        <IconButton {...bindTrigger(popupstate)} color="inherit">
-                            <SettingsIcon />
-                        </IconButton>
-                        <Menu {...bindMenu(popupstate)}>
-                            <MenuItem>
-                                <CheckboxInput
-                                    label={t('library.settings.advanced.duplicates.settings.label.check_description')}
-                                    checked={checkAlternativeTitles}
-                                    onChange={(_, checked) => setCheckAlternativeTitles(checked)}
-                                />
-                            </MenuItem>
-                            <MenuItem>
-                                <CheckboxInput
-                                    label={t('library.settings.advanced.duplicates.settings.label.check_tracked')}
-                                    checked={checkTrackedBySameTracker}
-                                    onChange={(_, checked) => setCheckTrackedBySameTracker(checked)}
-                                />
-                            </MenuItem>
-                        </Menu>
-                    </>
-                )}
-            </PopupState>
-        </>,
-        [t, gridLayout, checkAlternativeTitles, checkTrackedBySameTracker],
-    );
-
     const { data, loading, error, refetch } = requestManager.useGetMangas<
         GetMangasDuplicatesQuery,
         GetMangasDuplicatesQueryVariables
@@ -126,6 +93,46 @@ export const LibraryDuplicates = () => {
         () => duplicatedTitles.map((title) => mangasByTitle[title]).flat(),
         [mangasByTitle],
     );
+
+    // counts for groups and mangas involved in groups
+    const duplicateGroupsCount = duplicatedTitles.length;
+    const duplicateMangasCount = duplicatedMangas.length;
+
+    useAppTitleAndAction(
+        `${t('library.settings.advanced.duplicates.label.title')} — ${duplicateGroupsCount} ${t(
+            'library.settings.advanced.duplicates.label.groups',
+        )} / ${duplicateMangasCount} ${t('library.settings.advanced.duplicates.label.mangas')}`,
+        <>
+            <GridLayouts gridLayout={gridLayout} onChange={setGridLayout} />
+            <PopupState variant="popover" popupId="library-dupliactes-settings">
+                {(popupstate) => (
+                    <>
+                        <IconButton {...bindTrigger(popupstate)} color="inherit">
+                            <SettingsIcon />
+                        </IconButton>
+                        <Menu {...bindMenu(popupstate)}>
+                            <MenuItem>
+                                <CheckboxInput
+                                    label={t('library.settings.advanced.duplicates.settings.label.check_description')}
+                                    checked={checkAlternativeTitles}
+                                    onChange={(_, checked) => setCheckAlternativeTitles(checked)}
+                                />
+                            </MenuItem>
+                            <MenuItem>
+                                <CheckboxInput
+                                    label={t('library.settings.advanced.duplicates.settings.label.check_tracked')}
+                                    checked={checkTrackedBySameTracker}
+                                    onChange={(_, checked) => setCheckTrackedBySameTracker(checked)}
+                                />
+                            </MenuItem>
+                        </Menu>
+                    </>
+                )}
+            </PopupState>
+        </>,
+        [t, gridLayout, checkAlternativeTitles, checkTrackedBySameTracker, duplicateGroupsCount, duplicateMangasCount],
+    );
+
     const mangasCountByTitle = useMemo(
         () => duplicatedTitles.map((title) => mangasByTitle[title]).map((mangas) => mangas.length),
         [mangasByTitle],
