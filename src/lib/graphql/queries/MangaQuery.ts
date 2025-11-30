@@ -95,6 +95,7 @@ export const GET_MANGA_TO_MIGRATE = gql`
                     isRead
                     isDownloaded
                     isBookmarked
+                    isFillermarked
                 }
                 totalCount
             }

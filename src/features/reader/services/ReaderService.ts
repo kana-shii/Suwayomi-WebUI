@@ -199,7 +199,10 @@ export class ReaderService {
                                 (patch.lastPageRead !== undefined &&
                                     patch.lastPageRead !== chapterUpToDateData.lastPageRead) ||
                                 (patch.isBookmarked !== undefined &&
-                                    patch.isBookmarked !== chapterUpToDateData.isBookmarked)
+                                    patch.isBookmarked !== chapterUpToDateData.isBookmarked) ||
+                                // -------- fillermark logic, analogue to bookmark --------
+                                (patch.isFillermarked !== undefined &&
+                                    patch.isFillermarked !== chapterUpToDateData.isFillermarked)
                             );
                         });
                     if (!isUpdateRequired) {

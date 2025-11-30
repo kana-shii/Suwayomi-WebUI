@@ -18,6 +18,7 @@ export interface ChapterListOptions {
     unread: NullAndUndefined<boolean>;
     downloaded: NullAndUndefined<boolean>;
     bookmarked: NullAndUndefined<boolean>;
+    fillermarked: NullAndUndefined<boolean>;
     reverse: boolean;
     sortBy: ChapterSortMode;
     showChapterNumber: boolean;
@@ -26,7 +27,15 @@ export interface ChapterListOptions {
 
 export type TChapterReader = ChapterReaderFieldsFragment;
 
-export type ChapterAction = 'download' | 'delete' | 'bookmark' | 'unbookmark' | 'mark_as_read' | 'mark_as_unread';
+export type ChapterAction =
+    | 'download'
+    | 'delete'
+    | 'bookmark'
+    | 'unbookmark'
+    | 'fillermark'
+    | 'unfillermark'
+    | 'mark_as_read'
+    | 'mark_as_unread';
 
 export type ChapterDownloadStatus = DownloadStatusFieldsFragment['queue'][number];
 
@@ -37,6 +46,8 @@ export type ChapterMangaInfo = Pick<ChapterType, 'mangaId'>;
 export type ChapterDownloadInfo = Pick<ChapterType, 'isDownloaded'>;
 
 export type ChapterBookmarkInfo = Pick<ChapterType, 'isBookmarked'>;
+
+export type ChapterFillermarkInfo = Pick<ChapterType, 'isFillermarked'>;
 
 export type ChapterReadInfo = Pick<ChapterType, 'isRead'>;
 

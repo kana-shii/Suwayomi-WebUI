@@ -168,10 +168,16 @@ export const GET_MANGAS_CHAPTER_IDS_WITH_STATE = gql`
         $isDownloaded: Boolean = null
         $isRead: Boolean = null
         $isBookmarked: Boolean = null
+        $isFillermarked: Boolean = null
     ) {
         chapters(
             filter: { mangaId: { in: $mangaIds } }
-            condition: { isDownloaded: $isDownloaded, isRead: $isRead, isBookmarked: $isBookmarked }
+            condition: {
+                isDownloaded: $isDownloaded
+                isRead: $isRead
+                isBookmarked: $isBookmarked
+                isFillermarked: $isFillermarked
+            }
             order: [{ by: SOURCE_ORDER }]
         ) {
             nodes {

@@ -18,6 +18,7 @@ import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { DownloadStateIndicator } from '@/base/components/downloads/DownloadStateIndicator.tsx';
 import { ReaderLibraryButton } from '@/features/reader/overlay/navigation/components/ReaderLibraryButton.tsx';
 import { ReaderBookmarkButton } from '@/features/reader/overlay/navigation/components/ReaderBookmarkButton.tsx';
+import { ReaderFillermarkButton } from '@/features/reader/overlay/navigation/components/ReaderFillermarkButton.tsx';
 import { CHAPTER_ACTION_TO_TRANSLATION, FALLBACK_CHAPTER } from '@/features/chapter/Chapter.constants.ts';
 import { IconBrowser } from '@/assets/icons/IconBrowser.tsx';
 import { IconWebView } from '@/assets/icons/IconWebView.tsx';
@@ -64,7 +65,7 @@ const DownloadButton = ({
 export const ReaderNavBarDesktopActions = memo(() => {
     const currentChapter = useReaderChaptersStore((state) => state.chapters.currentChapter);
 
-    const { id, isBookmarked, realUrl } = currentChapter ?? FALLBACK_CHAPTER;
+    const { id, isBookmarked, isFillermarked, realUrl } = currentChapter ?? FALLBACK_CHAPTER;
 
     const { t } = useTranslation();
     const { pageLoadStates, setPageLoadStates, setRetryFailedPagesKeyPrefix } = useReaderPagesStore((state) => ({
@@ -84,6 +85,7 @@ export const ReaderNavBarDesktopActions = memo(() => {
         <Stack sx={{ flexDirection: 'row', justifyContent: 'center', gap: 1 }}>
             <ReaderLibraryButton />
             <ReaderBookmarkButton id={id} isBookmarked={isBookmarked} />
+            <ReaderFillermarkButton id={id} isFillermarked={isFillermarked} />
             <CustomTooltip title={t('reader.button.retry_load_pages')} disabled={!haveSomePagesFailedToLoad}>
                 <IconButton
                     onClick={() => {

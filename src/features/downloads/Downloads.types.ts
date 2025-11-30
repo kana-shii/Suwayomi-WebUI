@@ -11,4 +11,5 @@ export type MetadataDownloadSettings = {
     deleteChaptersWhileReading: number;
     deleteChaptersWithBookmark: boolean;
     downloadAheadLimit: number;
+    deleteChaptersWithFillermark?: boolean;
 };
