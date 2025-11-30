@@ -161,6 +161,16 @@ export const DownloadSettings = () => {
                         onChange={(e) => updateMetadataSetting('deleteChaptersWithBookmark', e.target.checked)}
                     />
                 </ListItem>
+                <ListItem>
+                    <ListItemText
+                        primary={t('download.settings.delete_chapters.label.allow_deletion_of_fillermarked')}
+                    />
+                    <Switch
+                        edge="end"
+                        checked={metadataSettings.deleteChaptersWithFillermark}
+                        onChange={(e) => updateMetadataSetting('deleteChaptersWithFillermark', e.target.checked)}
+                    />
+                </ListItem>
             </List>
             <List
                 subheader={

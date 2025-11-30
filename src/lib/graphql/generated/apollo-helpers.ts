@@ -84,7 +84,30 @@ export type ChapterNodeListFieldPolicy = {
 	pageInfo?: FieldPolicy<any> | FieldReadFunction<any>,
 	totalCount?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ChapterTypeKeySpecifier = ('chapterNumber' | 'fetchedAt' | 'id' | 'isBookmarked' | 'isDownloaded' | 'isRead' | 'lastPageRead' | 'lastReadAt' | 'manga' | 'mangaId' | 'meta' | 'name' | 'pageCount' | 'realUrl' | 'scanlator' | 'sourceOrder' | 'uploadDate' | 'url' | ChapterTypeKeySpecifier)[];
+
+// --------- FILLERMARK support added (like Bookmark) below ---------
+export type ChapterTypeKeySpecifier = (
+	| 'chapterNumber'
+	| 'fetchedAt'
+	| 'id'
+	| 'isBookmarked'
+	| 'isDownloaded'
+	| 'isRead'
+	| 'isFillermarked' // <-- ADDED
+	| 'lastPageRead'
+	| 'lastReadAt'
+	| 'manga'
+	| 'mangaId'
+	| 'meta'
+	| 'name'
+	| 'pageCount'
+	| 'realUrl'
+	| 'scanlator'
+	| 'sourceOrder'
+	| 'uploadDate'
+	| 'url'
+	| ChapterTypeKeySpecifier
+)[];
 export type ChapterTypeFieldPolicy = {
 	chapterNumber?: FieldPolicy<any> | FieldReadFunction<any>,
 	fetchedAt?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -92,6 +115,7 @@ export type ChapterTypeFieldPolicy = {
 	isBookmarked?: FieldPolicy<any> | FieldReadFunction<any>,
 	isDownloaded?: FieldPolicy<any> | FieldReadFunction<any>,
 	isRead?: FieldPolicy<any> | FieldReadFunction<any>,
+	isFillermarked?: FieldPolicy<any> | FieldReadFunction<any>, // <-- ADDED
 	lastPageRead?: FieldPolicy<any> | FieldReadFunction<any>,
 	lastReadAt?: FieldPolicy<any> | FieldReadFunction<any>,
 	manga?: FieldPolicy<any> | FieldReadFunction<any>,

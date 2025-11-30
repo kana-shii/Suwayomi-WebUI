@@ -104,6 +104,11 @@ export const LibraryOptionsPanel = ({
                                 onChange={(c) => updateCategoryLibraryOptions('hasBookmarkedChapters', c)}
                             />
                             <ThreeStateCheckboxInput
+                                label={t('global.filter.label.fillermarked')}
+                                checked={categoryLibraryOptions.hasFillermarkedChapters}
+                                onChange={(c) => updateCategoryLibraryOptions('hasFillermarkedChapters', c)}
+                            />
+                            <ThreeStateCheckboxInput
                                 label={t('global.filter.label.duplicate_chapters')}
                                 checked={categoryLibraryOptions.hasDuplicateChapters}
                                 onChange={(c) => updateCategoryLibraryOptions('hasDuplicateChapters', c)}

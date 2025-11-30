@@ -68,6 +68,34 @@
           }
         }
       },
+      "fillermark": {
+        "add": {
+          "button": {
+            "selected": "Fillermark selected"
+          },
+          "label": {
+            "action": "Add fillermark",
+            "error_one": "Could not fillermark the chapter",
+            "error_other": "Could not fillermark chapters",
+            "success_one": "Chapter fillermark",
+            "success_other": "{{count}} chapters fillermark"
+          }
+        },
+        "remove": {
+          "button": {
+            "selected": "Remove fillermark from selected"
+          },
+          "label": {
+            "action": "Remove fillermark",
+            "confirmation_one": "You are about to remove one fillermark",
+            "confirmation_other": "You are about to remove {{count}} fillermarks",
+            "error_one": "Could not remove the fillermark",
+            "error_other": "Could not remove the fillermarks",
+            "success_one": "Chapter fillermark removed",
+            "success_other": "{{count}} chapter fillermarks removed"
+          }
+        }
+      },
       "download": {
         "add": {
           "button": {
@@ -422,6 +450,7 @@
     "filter": {
       "label": {
         "bookmarked": "Bookmarked",
+        "fillermarked": "Fillermarked",
         "downloaded": "Downloaded",
         "duplicate_chapters": "Duplicate chapters",
         "started": "Started",

@@ -26,6 +26,7 @@ import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholde
 import { AppRoutes } from '@/base/AppRoute.constants.ts';
 import { ReaderLibraryButton } from '@/features/reader/overlay/navigation/components/ReaderLibraryButton.tsx';
 import { ReaderBookmarkButton } from '@/features/reader/overlay/navigation/components/ReaderBookmarkButton.tsx';
+import { ReaderFillermarkButton } from '@/features/reader/overlay/navigation/components/ReaderFillermarkButton.tsx';
 import { FALLBACK_CHAPTER } from '@/features/chapter/Chapter.constants.ts';
 import { FALLBACK_MANGA } from '@/features/manga/Manga.constants.ts';
 import { ReaderExitButton } from '@/features/reader/overlay/navigation/components/ReaderExitButton.tsx';
@@ -47,7 +48,7 @@ const BaseReaderOverlayHeaderMobile = ({ isVisible, ref }: MobileHeaderProps & {
     const scrollbar = useReaderScrollbarStore((state) => state.scrollbar);
 
     const { id: mangaId, title } = manga ?? DEFAULT_MANGA;
-    const { id: chapterId, name, realUrl, isBookmarked } = currentChapter ?? FALLBACK_CHAPTER;
+    const { id: chapterId, name, realUrl, isBookmarked, isFillermarked } = currentChapter ?? FALLBACK_CHAPTER;
 
     return (
         <Slide direction="down" in={isVisible} ref={ref}>
@@ -91,6 +92,7 @@ const BaseReaderOverlayHeaderMobile = ({ isVisible, ref }: MobileHeaderProps & {
                 </Stack>
                 <ReaderLibraryButton />
                 <ReaderBookmarkButton id={chapterId} isBookmarked={isBookmarked} />
+                <ReaderFillermarkButton id={chapterId} isFillermarked={isFillermarked} />
                 <IconButton {...bindTrigger(popupState)} color="inherit">
                     <MoreVertIcon />
                 </IconButton>

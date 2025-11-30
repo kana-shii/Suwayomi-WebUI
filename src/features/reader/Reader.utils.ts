@@ -48,6 +48,7 @@ export const getChapterIdsToDeleteForChapterUpdate = (
     patch: UpdateChapterPatchInput,
     deleteChaptersWhileReading: number,
     deleteChaptersWithBookmark: boolean,
+    deleteChaptersWithFillermark: boolean, // Added for fillermarks!
     shouldSkipDupChapters: boolean,
 ): TChapterReader['id'][] => {
     const isAutoDeletionEnabled = !!patch.isRead && !!deleteChaptersWhileReading;
@@ -67,7 +68,11 @@ export const getChapterIdsToDeleteForChapterUpdate = (
         .map(({ id }) => getReaderChapterFromCache(id))
         .filter((chapterToDeleteUpToDateData) => chapterToDeleteUpToDateData !== null)
         .filter((chapterToDeleteUpToDateData) =>
-            Chapters.isDeletable(chapterToDeleteUpToDateData, deleteChaptersWithBookmark),
+            Chapters.isDeletable(
+                chapterToDeleteUpToDateData,
+                deleteChaptersWithBookmark,
+                deleteChaptersWithFillermark, // Pass fillermark flag (same as bookmark)
+            ),
         );
 
     if (!chaptersToDelete.length) {
