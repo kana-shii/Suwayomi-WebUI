@@ -74,6 +74,7 @@ export const UPDATE_CHAPTER = gql`
     mutation UPDATE_CHAPTER(
         $input: UpdateChapterInput!
         $getBookmarked: Boolean!
+        $getFillermarked: Boolean!
         $getRead: Boolean!
         $getLastPageRead: Boolean!
         $chapterIdToDelete: Int!
@@ -85,6 +86,7 @@ export const UPDATE_CHAPTER = gql`
             chapter {
                 id
                 isBookmarked @include(if: $getBookmarked)
+                isFillermarked @include(if: $getFillermarked)
                 isRead @include(if: $getRead)
                 lastReadAt @include(if: $getRead)
                 lastPageRead @include(if: $getLastPageRead)
@@ -104,6 +106,10 @@ export const UPDATE_CHAPTER = gql`
                 manga @include(if: $getBookmarked) {
                     id
                     bookmarkCount
+                }
+                manga @include(if: $getFillermarked) {
+                    id
+                    fillermarkCount
                 }
             }
         }
@@ -131,6 +137,7 @@ export const UPDATE_CHAPTERS = gql`
     mutation UPDATE_CHAPTERS(
         $input: UpdateChaptersInput!
         $getBookmarked: Boolean!
+        $getFillermarked: Boolean!
         $getRead: Boolean!
         $getLastPageRead: Boolean!
         $chapterIdsToDelete: [Int!]!
@@ -142,6 +149,7 @@ export const UPDATE_CHAPTERS = gql`
             chapters {
                 id
                 isBookmarked @include(if: $getBookmarked)
+                isFillermarked @include(if: $getFillermarked)
                 isRead @include(if: $getRead)
                 lastReadAt @include(if: $getRead)
                 lastPageRead @include(if: $getLastPageRead)
@@ -161,6 +169,10 @@ export const UPDATE_CHAPTERS = gql`
                 manga @include(if: $getBookmarked) {
                     id
                     bookmarkCount
+                }
+                manga @include(if: $getFillermarked) {
+                    id
+                    fillermarkCount
                 }
             }
         }

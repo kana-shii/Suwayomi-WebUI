@@ -84,7 +84,29 @@ export type ChapterNodeListFieldPolicy = {
 	pageInfo?: FieldPolicy<any> | FieldReadFunction<any>,
 	totalCount?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ChapterTypeKeySpecifier = ('chapterNumber' | 'fetchedAt' | 'id' | 'isBookmarked' | 'isDownloaded' | 'isRead' | 'lastPageRead' | 'lastReadAt' | 'manga' | 'mangaId' | 'meta' | 'name' | 'pageCount' | 'realUrl' | 'scanlator' | 'sourceOrder' | 'uploadDate' | 'url' | ChapterTypeKeySpecifier)[];
+
+export type ChapterTypeKeySpecifier = (
+	| 'chapterNumber'
+	| 'fetchedAt'
+	| 'id'
+	| 'isBookmarked'
+	| 'isDownloaded'
+	| 'isRead'
+	| 'isFillermarked'
+	| 'lastPageRead'
+	| 'lastReadAt'
+	| 'manga'
+	| 'mangaId'
+	| 'meta'
+	| 'name'
+	| 'pageCount'
+	| 'realUrl'
+	| 'scanlator'
+	| 'sourceOrder'
+	| 'uploadDate'
+	| 'url'
+	| ChapterTypeKeySpecifier
+)[];
 export type ChapterTypeFieldPolicy = {
 	chapterNumber?: FieldPolicy<any> | FieldReadFunction<any>,
 	fetchedAt?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -92,6 +114,7 @@ export type ChapterTypeFieldPolicy = {
 	isBookmarked?: FieldPolicy<any> | FieldReadFunction<any>,
 	isDownloaded?: FieldPolicy<any> | FieldReadFunction<any>,
 	isRead?: FieldPolicy<any> | FieldReadFunction<any>,
+	isFillermarked?: FieldPolicy<any> | FieldReadFunction<any>, // <-- ADDED
 	lastPageRead?: FieldPolicy<any> | FieldReadFunction<any>,
 	lastReadAt?: FieldPolicy<any> | FieldReadFunction<any>,
 	manga?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -440,12 +463,13 @@ export type MangaNodeListFieldPolicy = {
 	pageInfo?: FieldPolicy<any> | FieldReadFunction<any>,
 	totalCount?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MangaTypeKeySpecifier = ('age' | 'artist' | 'author' | 'bookmarkCount' | 'categories' | 'chapters' | 'chaptersAge' | 'chaptersLastFetchedAt' | 'description' | 'downloadCount' | 'firstUnreadChapter' | 'genre' | 'hasDuplicateChapters' | 'highestNumberedChapter' | 'id' | 'inLibrary' | 'inLibraryAt' | 'initialized' | 'lastFetchedAt' | 'lastReadChapter' | 'latestFetchedChapter' | 'latestReadChapter' | 'latestUploadedChapter' | 'meta' | 'realUrl' | 'source' | 'sourceId' | 'status' | 'thumbnailUrl' | 'thumbnailUrlLastFetched' | 'title' | 'trackRecords' | 'unreadCount' | 'updateStrategy' | 'url' | MangaTypeKeySpecifier)[];
+export type MangaTypeKeySpecifier = ('age' | 'artist' | 'author' | 'bookmarkCount' | 'fillermarkCount' |'categories' | 'chapters' | 'chaptersAge' | 'chaptersLastFetchedAt' | 'description' | 'downloadCount' | 'firstUnreadChapter' | 'genre' | 'hasDuplicateChapters' | 'highestNumberedChapter' | 'id' | 'inLibrary' | 'inLibraryAt' | 'initialized' | 'lastFetchedAt' | 'lastReadChapter' | 'latestFetchedChapter' | 'latestReadChapter' | 'latestUploadedChapter' | 'meta' | 'realUrl' | 'source' | 'sourceId' | 'status' | 'thumbnailUrl' | 'thumbnailUrlLastFetched' | 'title' | 'trackRecords' | 'unreadCount' | 'updateStrategy' | 'url' | MangaTypeKeySpecifier)[];
 export type MangaTypeFieldPolicy = {
 	age?: FieldPolicy<any> | FieldReadFunction<any>,
 	artist?: FieldPolicy<any> | FieldReadFunction<any>,
 	author?: FieldPolicy<any> | FieldReadFunction<any>,
 	bookmarkCount?: FieldPolicy<any> | FieldReadFunction<any>,
+	fillermarkCount?: FieldPolicy<any> | FieldReadFunction<any>,
 	categories?: FieldPolicy<any> | FieldReadFunction<any>,
 	chapters?: FieldPolicy<any> | FieldReadFunction<any>,
 	chaptersAge?: FieldPolicy<any> | FieldReadFunction<any>,

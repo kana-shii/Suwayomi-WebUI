@@ -192,7 +192,7 @@ export class Mangas {
 
     static async getChapterIdsWithState(
         mangaIds: number[],
-        state: Pick<ChapterConditionInput, 'isRead' | 'isDownloaded' | 'isBookmarked'>,
+        state: Pick<ChapterConditionInput, 'isRead' | 'isDownloaded' | 'isBookmarked' | 'isFillermarked'>,
     ): Promise<GetMangasChapterIdsWithStateQuery['chapters']['nodes']> {
         const { data } = await requestManager.getMangasChapterIdsWithState(mangaIds, state).response;
         return data.chapters.nodes;
@@ -329,9 +329,10 @@ export class Mangas {
 
         const readChapters: number[] = [];
         const bookmarkedChapters: number[] = [];
+        const fillermarkedChapters: number[] = [];
 
         migratableChapters.forEach(([chapterToMigrate, chapterToMigrateTo]) => {
-            const { isRead, isBookmarked } = chapterToMigrate;
+            const { isRead, isBookmarked, isFillermarked } = chapterToMigrate;
 
             if (isRead) {
                 readChapters.push(chapterToMigrateTo.id);
@@ -339,6 +340,9 @@ export class Mangas {
 
             if (isBookmarked) {
                 bookmarkedChapters.push(chapterToMigrateTo.id);
+            }
+            if (isFillermarked) {
+                fillermarkedChapters.push(chapterToMigrateTo.id);
             }
         });
 
@@ -348,6 +352,8 @@ export class Mangas {
                     readChapters.length && requestManager.updateChapters(readChapters, { isRead: true }).response,
                     bookmarkedChapters.length &&
                         requestManager.updateChapters(bookmarkedChapters, { isBookmarked: true }).response,
+                    fillermarkedChapters.length &&
+                        requestManager.updateChapters(fillermarkedChapters, { isFillermarked: true }).response,
                 ].filter((promise) => !!promise),
             cleanup: () =>
                 mode === 'migrate'

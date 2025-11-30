@@ -70,6 +70,11 @@ export const ChapterOptions: React.FC<IProps> = ({
                                 checked={options.bookmarked}
                                 onChange={(c) => updateOption('bookmarked', c)}
                             />
+                            <ThreeStateCheckboxInput
+                                label={t('global.filter.label.fillermarked')}
+                                checked={options.fillermarked}
+                                onChange={(c) => updateOption('fillermarked', c)}
+                            />
                             <ChapterExcludeSanlatorsFilter
                                 scanlators={scanlators}
                                 excludedScanlators={excludedScanlators}

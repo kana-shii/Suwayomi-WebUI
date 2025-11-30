@@ -9,12 +9,13 @@
 import { ChapterAction, ChapterListOptions, ChapterSortMode } from '@/features/chapter/Chapter.types.ts';
 import { TranslationKey } from '@/base/Base.types.ts';
 
-export const FALLBACK_CHAPTER = { id: -1, name: '', realUrl: '', isBookmarked: false };
+export const FALLBACK_CHAPTER = { id: -1, name: '', realUrl: '', isBookmarked: false, isFillermarked: false };
 
 export const DEFAULT_CHAPTER_OPTIONS: ChapterListOptions = {
     unread: undefined,
     downloaded: undefined,
     bookmarked: undefined,
+    fillermarked: undefined,
     reverse: true,
     sortBy: 'source',
     showChapterNumber: false,
@@ -38,6 +39,8 @@ export const CHAPTER_ACTION_TO_CONFIRMATION_REQUIRED: Record<
     unbookmark: { always: false, bulkAction: true },
     mark_as_read: { always: false, bulkAction: true },
     mark_as_unread: { always: false, bulkAction: true },
+    fillermark: { always: false, bulkAction: false },
+    unfillermark: { always: false, bulkAction: true },
 };
 
 export const CHAPTER_ACTION_TO_TRANSLATION: {
@@ -103,5 +106,22 @@ export const CHAPTER_ACTION_TO_TRANSLATION: {
         confirmation: 'chapter.action.mark_as_read.remove.label.confirmation',
         success: 'chapter.action.mark_as_read.remove.label.success',
         error: 'chapter.action.mark_as_read.remove.label.error',
+    },
+    fillermark: {
+        action: {
+            single: 'chapter.action.fillermark.add.label.action',
+            selected: 'chapter.action.fillermark.add.button.selected',
+        },
+        success: 'chapter.action.fillermark.add.label.success',
+        error: 'chapter.action.fillermark.add.label.error',
+    },
+    unfillermark: {
+        action: {
+            single: 'chapter.action.fillermark.remove.label.action',
+            selected: 'chapter.action.fillermark.remove.button.selected',
+        },
+        confirmation: 'chapter.action.fillermark.remove.label.confirmation',
+        success: 'chapter.action.fillermark.remove.label.success',
+        error: 'chapter.action.fillermark.remove.label.error',
     },
 };

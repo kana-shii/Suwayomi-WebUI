@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import { ChapterType } from '@/lib/graphql/generated/graphql.ts';
 import {
     ChapterBookmarkInfo,
+    ChapterFillermarkInfo,
     ChapterDownloadInfo,
     ChapterListOptions,
     ChapterReadInfo,
@@ -56,6 +57,19 @@ function bookmarkedFilter(
     }
 }
 
+function fillermarkedFilter(
+    fillermarked: NullAndUndefined<boolean>,
+    { isFillermarked: chapterFillermarked }: ChapterFillermarkInfo,
+) {
+    switch (fillermarked) {
+        case true:
+            return chapterFillermarked;
+        case false:
+            return !chapterFillermarked;
+        default:
+            return true;
+    }
+}
 function scanlatorFilter(excludedScanlators: string[], { scanlator }: ChapterScanlatorInfo): boolean {
     return !scanlator || !excludedScanlators.includes(scanlator);
 }
@@ -91,7 +105,11 @@ const sortChapters = <T extends TChapterSort>(
     return sortedChapters;
 };
 
-type TChapterFilter = ChapterReadInfo & ChapterDownloadInfo & ChapterBookmarkInfo & ChapterScanlatorInfo;
+type TChapterFilter = ChapterReadInfo &
+    ChapterDownloadInfo &
+    ChapterBookmarkInfo &
+    ChapterScanlatorInfo &
+    ChapterFillermarkInfo;
 export function filterChapters<Chapters extends TChapterFilter>(
     chapters: Chapters[],
     options: ChapterListOptions,
@@ -101,6 +119,7 @@ export function filterChapters<Chapters extends TChapterFilter>(
             unreadFilter(options.unread, chp) &&
             downloadFilter(options.downloaded, chp) &&
             bookmarkedFilter(options.bookmarked, chp) &&
+            fillermarkedFilter(options.fillermarked, chp) &&
             scanlatorFilter(options.excludedScanlators, chp),
     );
 }
@@ -115,17 +134,32 @@ export function filterAndSortChapters<Chapters extends TChapterSort & TChapterFi
 }
 
 export const isFilterActive = (options: ChapterListOptions) => {
-    const { unread, downloaded, bookmarked, excludedScanlators } = options;
-    return unread != null || downloaded != null || bookmarked != null || !!excludedScanlators.length;
+    const { unread, downloaded, bookmarked, fillermarked, excludedScanlators } = options;
+    return (
+        unread != null ||
+        downloaded != null ||
+        bookmarked != null ||
+        fillermarked != null ||
+        !!excludedScanlators.length
+    );
 };
 
 export const useChapterListOptions = (manga: MangaIdInfo & GqlMetaHolder): ChapterListOptions => {
-    const { unread, downloaded, bookmarked, reverse, sortBy, showChapterNumber, excludedScanlators } =
+    const { unread, downloaded, bookmarked, fillermarked, reverse, sortBy, showChapterNumber, excludedScanlators } =
         useGetMangaMetadata(manga);
 
     return useMemo(
-        () => ({ unread, downloaded, bookmarked, reverse, sortBy, showChapterNumber, excludedScanlators }),
-        [unread, downloaded, bookmarked, reverse, sortBy, showChapterNumber, excludedScanlators],
+        () => ({
+            unread,
+            downloaded,
+            bookmarked,
+            fillermarked,
+            reverse,
+            sortBy,
+            showChapterNumber,
+            excludedScanlators,
+        }),
+        [unread, downloaded, bookmarked, fillermarked, reverse, sortBy, showChapterNumber, excludedScanlators],
     );
 };
 
