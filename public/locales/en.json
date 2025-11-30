@@ -672,7 +672,9 @@
           },
           "settings": {
             "label": {
-              "check_description": "Check description"
+              "check_description": "Check description",
+              "check_tracked": "Check tracker bindings (same external tracker entry)",
+              "check_image_hashes": "Check image hashes"
             }
           }
         }

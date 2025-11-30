@@ -187,5 +187,14 @@ export const MANGA_LIBRARY_DUPLICATE_SCREEN_FIELDS = gql`
         ...MANGA_CHAPTER_STAT_FIELDS
 
         description
+
+        trackRecords {
+            totalCount
+            nodes {
+                id
+                trackerId
+                remoteId
+            }
+        }
     }
 `;
