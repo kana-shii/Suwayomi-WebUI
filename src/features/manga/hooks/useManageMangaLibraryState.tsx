@@ -6,9 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import gql from 'graphql-tag';
 import { AwaitableComponent } from 'awaitable-component';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
@@ -29,9 +28,12 @@ export const useManageMangaLibraryState = (
     confirmRemoval: boolean = false,
 ) => {
     const { t } = useTranslation();
-    const navigate = useNavigate();
 
     const [isInLibrary, setIsInLibrary] = useState(!!manga.inLibrary);
+
+    useEffect(() => {
+        setIsInLibrary(!!manga.inLibrary);
+    }, [manga.id]);
 
     const addToLibrary = useCallback(
         (addToCategories: number[] = [], removeFromCategories: number[] = []) => {
@@ -133,10 +135,15 @@ export const useManageMangaLibraryState = (
                         title: t('global.label.are_you_sure'),
                         message: t('manga.action.library.add.dialog.duplicate.label.info'),
                         actions: {
-                            extra: { show: true, title: t('migrate.dialog.action.button.show_entry'), contain: true },
+                            extra: {
+                                show: true,
+                                title: t('migrate.dialog.action.button.show_entry'),
+                                contain: true,
+                                link: AppRoutes.manga.path(duplicatedLibraryMangas!.data.mangas.nodes[0].id),
+                            },
                             confirm: { title: t('global.button.add') },
                         },
-                        onExtra: () => navigate(AppRoutes.manga.path(duplicatedLibraryMangas!.data.mangas.nodes[0].id)),
+                        onExtra: () => {},
                     },
                     { id: `manga-library-state-add-duplicated-${manga.id}` },
                 );
