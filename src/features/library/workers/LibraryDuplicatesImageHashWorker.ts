@@ -17,7 +17,7 @@ self.onmessage = async (
     const { mangas } = ev.data;
 
     // single source-of-truth default threshold (change here)
-    const DEFAULT_DETECTION_THRESHOLD = 20;
+    const DEFAULT_DETECTION_THRESHOLD = 23;
 
     const DETECTION_THRESHOLD = typeof ev.data.threshold === 'number' ? ev.data.threshold : DEFAULT_DETECTION_THRESHOLD;
     const DEBUG = !!ev.data.debug;
