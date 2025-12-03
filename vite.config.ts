@@ -26,6 +26,15 @@ export default defineConfig(({ command }) => ({
     server: {
         port: Number(process.env.PORT),
         allowedHosts: process.env.ALLOWED_HOSTS.split(',').map((s) => s.trim()),
+        // Dev server proxy so requests to /api on port 3000 are forwarded to the backend on 4567
+        proxy: {
+            '^/api/.*': {
+                target: 'http://localhost:4567',
+                changeOrigin: true,
+                secure: false,
+                // rewrite: (path) => path.replace(/^\/api/, '/api'), // optional
+            },
+        },
     },
     resolve: {
         alias: {

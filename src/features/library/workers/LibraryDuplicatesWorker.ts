@@ -20,7 +20,7 @@ import { enhancedCleanup } from '@/base/utils/Strings.ts';
 const queue = new Queue((navigator.hardwareConcurrency ?? 5) - 1);
 const MANGAS_PER_CHUNK = 200;
 
-// Disjoint-set (union-find) for efficient merging of groups.
+// Disjoint-set (union-find) implementation (unchanged)
 class UnionFind {
     parent: number[];
 
@@ -52,7 +52,6 @@ class UnionFind {
     }
 }
 
-// Merge multiple duplicate maps into connected components (transitive merge) using union-find
 function mergeDuplicateMapsAsComponents(
     mangas: TMangaDuplicate[],
     maps: TMangaDuplicates<TMangaDuplicate>[],
@@ -62,7 +61,6 @@ function mergeDuplicateMapsAsComponents(
     const n = mangas.length;
     const uf = new UnionFind(n);
 
-    // For each group in each map, union all members with the first member (O(k) per group)
     for (let mi = 0; mi < maps.length; mi += 1) {
         const map = maps[mi];
         const groups = Object.values(map);
@@ -73,9 +71,7 @@ function mergeDuplicateMapsAsComponents(
                 const idx = idToIndex.get(String(group[i].id));
                 if (idx !== undefined) idxs.push(idx);
             }
-            if (idxs.length <= 1) {
-                // nothing to union for this group
-            } else {
+            if (idxs.length > 1) {
                 const base = idxs[0];
                 for (let j = 1; j < idxs.length; j += 1) {
                     uf.union(base, idxs[j]);
@@ -84,7 +80,6 @@ function mergeDuplicateMapsAsComponents(
         }
     }
 
-    // gather components
     const rootToMembers = new Map<number, number[]>();
     for (let i = 0; i < n; i += 1) {
         const root = uf.find(i);
@@ -94,15 +89,13 @@ function mergeDuplicateMapsAsComponents(
     }
 
     const result: TMangaDuplicates<TMangaDuplicate> = {};
-    // deterministic order: sort roots by smallest index
     const roots = Array.from(rootToMembers.keys()).sort((a, b) => a - b);
     for (let ri = 0; ri < roots.length; ri += 1) {
         const root = roots[ri];
         const members = rootToMembers.get(root)!;
         if (members.length <= 1) {
-            // singletons are not duplicates
+            // skip singletons
         } else {
-            // build group in the original order of indices
             const group: TMangaDuplicate[] = [];
             for (let mi = 0; mi < members.length; mi += 1) {
                 group.push(mangas[members[mi]]);
@@ -117,57 +110,50 @@ function mergeDuplicateMapsAsComponents(
 
 // eslint-disable-next-line no-restricted-globals
 self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
-    const { mangas, checkAlternativeTitles, checkTrackedBySameTracker } = event.data;
+    const { mangas, checkAlternativeTitles, checkTrackedBySameTracker, checkImageHashes } = event.data;
 
-    // 1) EXCLUSIVE: tracker-only (user enabled only tracker toggle)
-    if (checkTrackedBySameTracker && !checkAlternativeTitles) {
+    // title-only
+    const onlyTitle = !checkAlternativeTitles && !checkTrackedBySameTracker && !checkImageHashes;
+    // exclusive modes for each check
+    const onlyTracker = checkTrackedBySameTracker && !checkAlternativeTitles && !checkImageHashes;
+    const onlyDescription = checkAlternativeTitles && !checkTrackedBySameTracker && !checkImageHashes;
+    const onlyImage = checkImageHashes && !checkTrackedBySameTracker && !checkAlternativeTitles;
+
+    if (onlyTracker) {
         const workerPromise = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
-
         const trackerWorker = new Worker(new URL('LibraryDuplicatesTrackerWorker.ts', import.meta.url), {
             type: 'module',
         });
-
         trackerWorker.onmessage = (trackerEvent: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) =>
             workerPromise.resolve(trackerEvent.data);
-
         trackerWorker.postMessage({ mangas } as { mangas: TMangaDuplicate[] });
-
         const trackerResult = await workerPromise.promise;
         trackerWorker.terminate();
-
         postMessage(trackerResult);
         return;
     }
 
-    // 2) EXCLUSIVE: description-only (user enabled only description toggle)
-    if (checkAlternativeTitles && !checkTrackedBySameTracker) {
-        // chunked description worker path (unchanged behavior)
+    if (onlyDescription) {
         const chunkPromises: Promise<TMangaDuplicates<TMangaDuplicate>>[] = [];
         for (let chunkStart = 0; chunkStart < mangas.length; chunkStart += MANGAS_PER_CHUNK) {
             chunkPromises.push(
                 queue.enqueue(chunkStart.toString(), () => {
                     const workerPromise = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
-
                     const worker = new Worker(new URL('LibraryDuplicatesDescriptionWorker.ts', import.meta.url), {
                         type: 'module',
                     });
-
                     worker.onmessage = (subWorkerEvent: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) =>
                         workerPromise.resolve(subWorkerEvent.data);
-
                     worker.postMessage({
                         mangas,
                         mangasToCheck: mangas.slice(chunkStart, chunkStart + MANGAS_PER_CHUNK),
                     } satisfies LibraryDuplicatesDescriptionWorkerInput);
-
                     return workerPromise.promise;
                 }).promise,
             );
         }
-
         const chunkedResults = await Promise.all(chunkPromises);
         const mergedResult: TMangaDuplicates<TMangaDuplicate> = {};
-
         const cleanedUpTitleToOriginalTitle: Record<string, string> = {};
         for (let ci = 0; ci < chunkedResults.length; ci += 1) {
             const chunkedResult = chunkedResults[ci];
@@ -179,81 +165,110 @@ self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
                     cleanedUpTitleToOriginalTitle[cleanedTitle] = title;
                 }
                 const originalTitle = cleanedUpTitleToOriginalTitle[cleanedTitle];
-
                 if (mergedResult[originalTitle] === undefined) {
                     mergedResult[originalTitle] = duplicates;
                 }
             }
         }
-
         postMessage(mergedResult);
         return;
     }
 
-    // 3) EXCLUSIVE: title-only (neither toggle enabled)
-    if (!checkTrackedBySameTracker && !checkAlternativeTitles) {
+    if (onlyImage) {
+        const workerPromise = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
+        const imageWorker = new Worker(new URL('LibraryDuplicatesImageHashWorker.ts', import.meta.url), {
+            type: 'module',
+        });
+        imageWorker.onmessage = (ev: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) => workerPromise.resolve(ev.data);
+        // pass minimal mangas for hashing
+        imageWorker.postMessage({ mangas } as { mangas: TMangaDuplicate[] });
+        const imageResult = await workerPromise.promise;
+        imageWorker.terminate();
+        postMessage(imageResult);
+        return;
+    }
+
+    if (onlyTitle) {
         const titleResult = findDuplicatesByTitle(mangas);
         postMessage(titleResult);
         return;
     }
 
-    // 4) BOTH toggles enabled -> compute both in parallel and merge (combined)
-    // Prepare tracker worker
-    const trackerPromiseCtrl = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
-    const trackerWorker = new Worker(new URL('LibraryDuplicatesTrackerWorker.ts', import.meta.url), {
-        type: 'module',
-    });
-    trackerWorker.onmessage = (trackerEvent: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) =>
-        trackerPromiseCtrl.resolve(trackerEvent.data);
-    trackerWorker.postMessage({ mangas } as { mangas: TMangaDuplicate[] });
+    // otherwise multiple toggles enabled: compute all enabled checks in parallel and merge
+    const resultsToMerge: TMangaDuplicates<TMangaDuplicate>[] = [];
 
-    // compute title/description-based result (chunked)
-    const chunkPromises: Promise<TMangaDuplicates<TMangaDuplicate>>[] = [];
-    for (let chunkStart = 0; chunkStart < mangas.length; chunkStart += MANGAS_PER_CHUNK) {
-        chunkPromises.push(
-            queue.enqueue(chunkStart.toString(), () => {
-                const workerPromise = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
+    // title always cheap -> run synchronously
+    resultsToMerge.push(findDuplicatesByTitle(mangas));
 
-                const worker = new Worker(new URL('LibraryDuplicatesDescriptionWorker.ts', import.meta.url), {
-                    type: 'module',
-                });
-
-                worker.onmessage = (subWorkerEvent: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) =>
-                    workerPromise.resolve(subWorkerEvent.data);
-
-                worker.postMessage({
-                    mangas,
-                    mangasToCheck: mangas.slice(chunkStart, chunkStart + MANGAS_PER_CHUNK),
-                } satisfies LibraryDuplicatesDescriptionWorkerInput);
-
-                return workerPromise.promise;
-            }).promise,
-        );
-    }
-
-    const chunkedResults = await Promise.all(chunkPromises);
-    const mergedTitleResult: TMangaDuplicates<TMangaDuplicate> = {};
-    const cleanedUpTitleToOriginalTitle: Record<string, string> = {};
-    for (let ci = 0; ci < chunkedResults.length; ci += 1) {
-        const chunkedResult = chunkedResults[ci];
-        const entries = Object.entries(chunkedResult);
-        for (let ei = 0; ei < entries.length; ei += 1) {
-            const [title, duplicates] = entries[ei];
-            const cleanedTitle = enhancedCleanup(title);
-            if (cleanedUpTitleToOriginalTitle[cleanedTitle] === undefined) {
-                cleanedUpTitleToOriginalTitle[cleanedTitle] = title;
-            }
-            const originalTitle = cleanedUpTitleToOriginalTitle[cleanedTitle];
-
-            if (mergedTitleResult[originalTitle] === undefined) {
-                mergedTitleResult[originalTitle] = duplicates;
+    // description (chunked) if enabled
+    if (checkAlternativeTitles) {
+        const chunkPromises: Promise<TMangaDuplicates<TMangaDuplicate>>[] = [];
+        for (let chunkStart = 0; chunkStart < mangas.length; chunkStart += MANGAS_PER_CHUNK) {
+            chunkPromises.push(
+                queue.enqueue(chunkStart.toString(), () => {
+                    const workerPromise = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
+                    const worker = new Worker(new URL('LibraryDuplicatesDescriptionWorker.ts', import.meta.url), {
+                        type: 'module',
+                    });
+                    worker.onmessage = (subWorkerEvent: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) =>
+                        workerPromise.resolve(subWorkerEvent.data);
+                    worker.postMessage({
+                        mangas,
+                        mangasToCheck: mangas.slice(chunkStart, chunkStart + MANGAS_PER_CHUNK),
+                    } satisfies LibraryDuplicatesDescriptionWorkerInput);
+                    return workerPromise.promise;
+                }).promise,
+            );
+        }
+        const chunkedResults = await Promise.all(chunkPromises);
+        const mergedTitleResult: TMangaDuplicates<TMangaDuplicate> = {};
+        const cleanedUpTitleToOriginalTitle: Record<string, string> = {};
+        for (let ci = 0; ci < chunkedResults.length; ci += 1) {
+            const chunkedResult = chunkedResults[ci];
+            const entries = Object.entries(chunkedResult);
+            for (let ei = 0; ei < entries.length; ei += 1) {
+                const [title, duplicates] = entries[ei];
+                const cleanedTitle = enhancedCleanup(title);
+                if (cleanedUpTitleToOriginalTitle[cleanedTitle] === undefined) {
+                    cleanedUpTitleToOriginalTitle[cleanedTitle] = title;
+                }
+                const originalTitle = cleanedUpTitleToOriginalTitle[cleanedTitle];
+                if (mergedTitleResult[originalTitle] === undefined) {
+                    mergedTitleResult[originalTitle] = duplicates;
+                }
             }
         }
+        resultsToMerge.push(mergedTitleResult);
     }
 
-    const trackerResult = await trackerPromiseCtrl.promise;
-    trackerWorker.terminate();
+    // tracker if enabled
+    let trackerWorker: Worker | null = null;
+    if (checkTrackedBySameTracker) {
+        const wp = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
+        trackerWorker = new Worker(new URL('LibraryDuplicatesTrackerWorker.ts', import.meta.url), {
+            type: 'module',
+        });
+        trackerWorker.onmessage = (ev: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) => wp.resolve(ev.data);
+        trackerWorker.postMessage({ mangas } as { mangas: TMangaDuplicate[] });
+        const trackerResult = await wp.promise;
+        resultsToMerge.push(trackerResult);
+    }
 
-    const merged = mergeDuplicateMapsAsComponents(mangas, [mergedTitleResult, trackerResult]);
+    // image hashes if enabled
+    if (checkImageHashes) {
+        const wp = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
+        const imageWorker = new Worker(new URL('LibraryDuplicatesImageHashWorker.ts', import.meta.url), {
+            type: 'module',
+        });
+        imageWorker.onmessage = (ev: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) => wp.resolve(ev.data);
+        imageWorker.postMessage({ mangas } as { mangas: TMangaDuplicate[] });
+        const imageResult = await wp.promise;
+        imageWorker.terminate();
+        resultsToMerge.push(imageResult);
+    }
+
+    if (trackerWorker) trackerWorker.terminate();
+
+    const merged = mergeDuplicateMapsAsComponents(mangas, resultsToMerge);
     postMessage(merged);
 };

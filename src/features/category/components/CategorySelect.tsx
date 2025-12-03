@@ -187,7 +187,7 @@ export function CategorySelect(props: CategorySelectProps) {
         <Dialog
             sx={{
                 '.MuiDialog-paper': {
-                    maxHeight: 435,
+                    maxHeight: 850,
                     width: '80%',
                 },
             }}

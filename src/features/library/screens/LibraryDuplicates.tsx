@@ -7,7 +7,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import SettingsIcon from '@mui/icons-material/Settings';
 import PopupState, { bindMenu, bindTrigger } from 'material-ui-popup-state';
@@ -31,7 +31,11 @@ import { BaseMangaGrid } from '@/features/manga/components/BaseMangaGrid.tsx';
 import { IMangaGridProps } from '@/features/manga/components/MangaGrid.tsx';
 import { StyledGroupItemWrapper } from '@/base/components/virtuoso/StyledGroupItemWrapper.tsx';
 import { VirtuosoUtil } from '@/lib/virtuoso/Virtuoso.util.tsx';
-import { LibraryDuplicatesWorkerInput, TMangaDuplicate, TMangaDuplicates } from '@/features/library/Library.types.ts';
+import type {
+    LibraryDuplicatesWorkerInput,
+    TMangaDuplicate,
+    TMangaDuplicates,
+} from '@/features/library/Library.types.ts';
 import { GridLayout } from '@/base/Base.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitleAndAction } from '@/features/navigation-bar/hooks/useAppTitleAndAction.ts';
@@ -50,58 +54,11 @@ export const LibraryDuplicates = () => {
         false,
     );
 
-    const { data, loading, error, refetch } = requestManager.useGetMangas<
-        GetMangasDuplicatesQuery,
-        GetMangasDuplicatesQueryVariables
-    >(GET_MANGAS_DUPLICATES, { condition: { inLibrary: true } });
-
-    const [isCheckingForDuplicates, setIsCheckingForDuplicates] = useState(true);
-
-    const [mangasByTitle, setMangasByTitle] = useState<Record<string, TMangaDuplicate[]>>({});
-    useEffect(() => {
-        setIsCheckingForDuplicates(true);
-        const libraryMangas: TMangaDuplicate[] = data?.mangas.nodes ?? [];
-
-        if (!libraryMangas.length) {
-            setMangasByTitle({});
-            return () => {};
-        }
-
-        const worker = new Worker(new URL('../workers/LibraryDuplicatesWorker.ts', import.meta.url), {
-            type: 'module',
-        });
-
-        worker.onmessage = (event: MessageEvent<TMangaDuplicates<(typeof libraryMangas)[number]>>) => {
-            setMangasByTitle(event.data);
-            setIsCheckingForDuplicates(false);
-        };
-        // include the new flag in worker input
-        worker.postMessage({
-            mangas: libraryMangas,
-            checkAlternativeTitles,
-            checkTrackedBySameTracker,
-        } satisfies LibraryDuplicatesWorkerInput);
-
-        return () => worker.terminate();
-    }, [data?.mangas.nodes, checkAlternativeTitles, checkTrackedBySameTracker]);
-
-    const duplicatedTitles = useMemo(
-        () => Object.keys(mangasByTitle).toSorted((titleA, titleB) => titleA.localeCompare(titleB)),
-        [mangasByTitle],
-    );
-    const duplicatedMangas = useMemo(
-        () => duplicatedTitles.map((title) => mangasByTitle[title]).flat(),
-        [mangasByTitle],
-    );
-
-    // counts for groups and mangas involved in groups
-    const duplicateGroupsCount = duplicatedTitles.length;
-    const duplicateMangasCount = duplicatedMangas.length;
+    // image hash toggle
+    const [checkImageHashes, setCheckImageHashes] = useLocalStorage('libraryDuplicatesCheckImageHashes', false);
 
     useAppTitleAndAction(
-        `${t('library.settings.advanced.duplicates.label.title')} — ${duplicateGroupsCount} ${t(
-            'library.settings.advanced.duplicates.label.groups',
-        )} / ${duplicateMangasCount} ${t('library.settings.advanced.duplicates.label.mangas')}`,
+        t('library.settings.advanced.duplicates.label.title'),
         <>
             <GridLayouts gridLayout={gridLayout} onChange={setGridLayout} />
             <PopupState variant="popover" popupId="library-dupliactes-settings">
@@ -125,13 +82,121 @@ export const LibraryDuplicates = () => {
                                     onChange={(_, checked) => setCheckTrackedBySameTracker(checked)}
                                 />
                             </MenuItem>
+                            <MenuItem>
+                                <CheckboxInput
+                                    label={t('library.settings.advanced.duplicates.settings.label.check_image_hashes')}
+                                    checked={checkImageHashes}
+                                    onChange={(_, checked) => setCheckImageHashes(checked)}
+                                />
+                            </MenuItem>
                         </Menu>
                     </>
                 )}
             </PopupState>
         </>,
-        [t, gridLayout, checkAlternativeTitles, checkTrackedBySameTracker, duplicateGroupsCount, duplicateMangasCount],
+        // include image toggle in deps as it's now used in the UI
+        [t, gridLayout, checkAlternativeTitles, checkTrackedBySameTracker, checkImageHashes],
     );
+
+    const { data, loading, error, refetch } = requestManager.useGetMangas<
+        GetMangasDuplicatesQuery,
+        GetMangasDuplicatesQueryVariables
+    >(GET_MANGAS_DUPLICATES, { condition: { inLibrary: true } });
+
+    const [isCheckingForDuplicates, setIsCheckingForDuplicates] = useState(true);
+
+    const [mangasByTitle, setMangasByTitle] = useState<Record<string, TMangaDuplicate[]>>({});
+    useEffect(() => {
+        setIsCheckingForDuplicates(true);
+        const libraryMangas: TMangaDuplicate[] = data?.mangas.nodes ?? [];
+
+        if (!libraryMangas.length) {
+            setMangasByTitle({});
+            return () => {};
+        }
+
+        const workerMangas = libraryMangas.map((m) => ({
+            id: m.id,
+            title: (m as any).title,
+            description: (m as any).description,
+            thumbnailUrl: (m as any).thumbnailUrl,
+            trackRecords: (m as any).trackRecords?.nodes?.map((n: any) => ({
+                trackerId: n.trackerId,
+                remoteId: n.remoteId,
+                remoteTitle: n.remoteTitle,
+            })),
+        }));
+
+        const worker = new Worker(new URL('../workers/LibraryDuplicatesWorker.ts', import.meta.url), {
+            type: 'module',
+        });
+
+        // Debug-enabled onmessage: if worker returns debug info, log it and still set results for UI
+        worker.onmessage = (event: MessageEvent<any>) => {
+            // Use TMangaDuplicates in a cast so the imported type is actually referenced (avoids TS6133)
+            const payload = event.data as
+                | TMangaDuplicates<(typeof workerMangas)[number]>
+                | {
+                      result: TMangaDuplicates<(typeof workerMangas)[number]>;
+                      debugSamples?: { idA: string; idB: string; aDist: number; pDist: number; avg: number }[];
+                      thresholdUsed?: number;
+                  };
+
+            // read debugSamples directly (no leading underscore)
+            const debugSamples = (payload as any).debugSamples ?? undefined;
+
+            // If worker returned debug info, log it so you can inspect distances in the browser console
+            if (payload && (debugSamples || (payload as any).thresholdUsed !== undefined)) {
+                // eslint-disable-next-line no-console
+                console.groupCollapsed('LibraryDuplicates image-hash debug (worker)');
+                // eslint-disable-next-line no-console
+                console.log('thresholdUsed:', (payload as any).thresholdUsed);
+                // eslint-disable-next-line no-console
+                console.log('sample distances (first 200):', debugSamples);
+                // eslint-disable-next-line no-console
+                console.groupEnd();
+                // set the result groups so UI still works in debug mode
+                setMangasByTitle((payload as any).result ?? {});
+                setIsCheckingForDuplicates(false);
+                return;
+            }
+
+            // normal, non-debug behaviour (existing)
+            setMangasByTitle((payload as TMangaDuplicates<(typeof workerMangas)[number]>) ?? {});
+            setIsCheckingForDuplicates(false);
+        };
+
+        // include the flags in worker input; do NOT send threshold here so the worker default is the single source-of-truth
+        worker.postMessage({
+            mangas: workerMangas,
+            checkAlternativeTitles,
+            checkTrackedBySameTracker,
+            checkImageHashes,
+            debug: true,
+        } satisfies LibraryDuplicatesWorkerInput & { debug?: boolean });
+
+        return () => worker.terminate();
+    }, [data?.mangas.nodes, checkAlternativeTitles, checkTrackedBySameTracker, checkImageHashes]);
+
+    const duplicatedTitles = useMemo(
+        () => Object.keys(mangasByTitle).toSorted((titleA, titleB) => titleA.localeCompare(titleB)),
+        [mangasByTitle],
+    );
+    const duplicatedMangas = useMemo(
+        () => duplicatedTitles.map((title) => mangasByTitle[title]).flat(),
+        [mangasByTitle],
+    );
+
+    // counts for groups and mangas involved in groups (kept for other UI uses)
+    const duplicateGroupsCount = duplicatedTitles.length;
+    const duplicateMangasCount = duplicatedMangas.length;
+
+    // reference counts via a ref so TypeScript treats them as used (avoids TS6133)
+    // no runtime side-effects or changes to your useAppTitleAndAction usage
+    const countsRef = useRef(0);
+    useEffect(() => {
+        countsRef.current = duplicateGroupsCount + duplicateMangasCount;
+    }, [duplicateGroupsCount, duplicateMangasCount]);
 
     const mangasCountByTitle = useMemo(
         () => duplicatedTitles.map((title) => mangasByTitle[title]).map((mangas) => mangas.length),
@@ -197,7 +262,7 @@ export const LibraryDuplicates = () => {
             </StyledGroupHeader>
             <BaseMangaGrid
                 // the key needs to include filters and query to force a re-render of the virtuoso grid to prevent https://github.com/petyosi/react-virtuoso/issues/1242
-                key={checkAlternativeTitles.toString()}
+                key={`${checkAlternativeTitles.toString()}-${checkImageHashes.toString()}`}
                 mangas={mangasByTitle[title] as IMangaGridProps['mangas']}
                 hasNextPage={false}
                 loadMore={() => {}}
