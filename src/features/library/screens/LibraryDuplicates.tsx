@@ -72,21 +72,42 @@ export const LibraryDuplicates = () => {
                                 <CheckboxInput
                                     label={t('library.settings.advanced.duplicates.settings.label.check_description')}
                                     checked={checkAlternativeTitles}
-                                    onChange={(_, checked) => setCheckAlternativeTitles(checked)}
+                                    onChange={(_, checked) => {
+                                        // If enabling alternative-title check, disable the other two toggles.
+                                        setCheckAlternativeTitles(checked);
+                                        if (checked) {
+                                            setCheckTrackedBySameTracker(false);
+                                            setCheckImageHashes(false);
+                                        }
+                                    }}
                                 />
                             </MenuItem>
                             <MenuItem>
                                 <CheckboxInput
                                     label={t('library.settings.advanced.duplicates.settings.label.check_tracked')}
                                     checked={checkTrackedBySameTracker}
-                                    onChange={(_, checked) => setCheckTrackedBySameTracker(checked)}
+                                    onChange={(_, checked) => {
+                                        // If enabling tracker check, disable the other two toggles.
+                                        setCheckTrackedBySameTracker(checked);
+                                        if (checked) {
+                                            setCheckAlternativeTitles(false);
+                                            setCheckImageHashes(false);
+                                        }
+                                    }}
                                 />
                             </MenuItem>
                             <MenuItem>
                                 <CheckboxInput
                                     label={t('library.settings.advanced.duplicates.settings.label.check_image_hashes')}
                                     checked={checkImageHashes}
-                                    onChange={(_, checked) => setCheckImageHashes(checked)}
+                                    onChange={(_, checked) => {
+                                        // If enabling image-hash check, disable the other two toggles.
+                                        setCheckImageHashes(checked);
+                                        if (checked) {
+                                            setCheckAlternativeTitles(false);
+                                            setCheckTrackedBySameTracker(false);
+                                        }
+                                    }}
                                 />
                             </MenuItem>
                         </Menu>

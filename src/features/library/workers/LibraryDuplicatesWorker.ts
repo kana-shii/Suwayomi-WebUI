@@ -108,6 +108,49 @@ function mergeDuplicateMapsAsComponents(
     return result;
 }
 
+// Helper: map a worker-returned duplicate map (which may contain minimal manga objects)
+// back to full mangas using the original mangas array and prefer a title-based key.
+function mapHashResultToFull(
+    partial: TMangaDuplicates<any>,
+    fullMangas: TMangaDuplicate[],
+): TMangaDuplicates<TMangaDuplicate> {
+    const idToManga = new Map<string, TMangaDuplicate>();
+    fullMangas.forEach((m) => idToManga.set(String(m.id), m));
+
+    const mapped: TMangaDuplicates<TMangaDuplicate> = {};
+    const entries = Object.entries(partial);
+    for (let ei = 0; ei < entries.length; ei += 1) {
+        const [key, group] = entries[ei];
+        const mappedGroup: TMangaDuplicate[] = [];
+        for (let gi = 0; gi < group.length; gi += 1) {
+            const item = group[gi];
+            const id = String(item.id);
+            const full = idToManga.get(id);
+            if (full) mappedGroup.push(full);
+            else {
+                // Fallback: if we don't have the original full manga, try to use whatever was returned
+                mappedGroup.push(item as TMangaDuplicate);
+            }
+        }
+        if (mappedGroup.length > 1) {
+            const outKey = mappedGroup[0].title ?? key;
+            // ensure we don't overwrite an existing key (preserve first-seen)
+            if (mapped[outKey] === undefined) mapped[outKey] = mappedGroup;
+            else {
+                // if key collision, append uniquely
+                let idx = 1;
+                let candidate = `${outKey}-${idx}`;
+                while (mapped[candidate] !== undefined) {
+                    idx += 1;
+                    candidate = `${outKey}-${idx}`;
+                }
+                mapped[candidate] = mappedGroup;
+            }
+        }
+    }
+    return mapped;
+}
+
 // eslint-disable-next-line no-restricted-globals
 self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
     const { mangas, checkAlternativeTitles, checkTrackedBySameTracker, checkImageHashes } = event.data;
@@ -180,11 +223,16 @@ self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
             type: 'module',
         });
         imageWorker.onmessage = (ev: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) => workerPromise.resolve(ev.data);
-        // pass minimal mangas for hashing
-        imageWorker.postMessage({ mangas } as { mangas: TMangaDuplicate[] });
+        // pass minimal mangas for hashing to reduce structured-clone overhead
+        imageWorker.postMessage({
+            mangas: mangas.map((m) => ({ id: m.id, thumbnailUrl: (m as any).thumbnailUrl })),
+        } as { mangas: TMangaDuplicate[] });
         const imageResult = await workerPromise.promise;
         imageWorker.terminate();
-        postMessage(imageResult);
+
+        // Map the image-hash result back to full mangas (so group labels can use titles)
+        const mappedImageResult = mapHashResultToFull(imageResult as TMangaDuplicates<any>, mangas);
+        postMessage(mappedImageResult);
         return;
     }
 
@@ -261,10 +309,16 @@ self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
             type: 'module',
         });
         imageWorker.onmessage = (ev: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) => wp.resolve(ev.data);
-        imageWorker.postMessage({ mangas } as { mangas: TMangaDuplicate[] });
+        // pass minimal mangas for hashing to reduce structured-clone overhead
+        imageWorker.postMessage({
+            mangas: mangas.map((m) => ({ id: m.id, thumbnailUrl: (m as any).thumbnailUrl })),
+        } as { mangas: TMangaDuplicate[] });
         const imageResult = await wp.promise;
         imageWorker.terminate();
-        resultsToMerge.push(imageResult);
+
+        // Map the image-hash result back to full mangas before merging
+        const mappedImageResult = mapHashResultToFull(imageResult as TMangaDuplicates<any>, mangas);
+        resultsToMerge.push(mappedImageResult);
     }
 
     if (trackerWorker) trackerWorker.terminate();
