@@ -31,6 +31,7 @@ import { SearchParam } from '@/base/Base.types.ts';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { ReactRouter } from '@/lib/react-router/ReactRouter.ts';
 import { AuthManager } from '@/features/authentication/AuthManager.ts';
+import { ImageProcessingType } from '@/features/settings/Settings.types.ts';
 
 const { Browse } = loadable(() => import('@/features/browse/screens/Browse.tsx'), lazyLoadFallback);
 const { DownloadQueue } = loadable(() => import('@/features/downloads/screens/DownloadQueue.tsx'), lazyLoadFallback);
@@ -58,6 +59,11 @@ const { History } = loadable(() => import('@/features/history/screens/History.ts
 const { LibrarySettings } = loadable(() => import('@/features/library/screens/LibrarySettings.tsx'), lazyLoadFallback);
 const { DownloadSettings } = loadable(
     () => import('@/features/downloads/screens/DownloadSettings.tsx'),
+    lazyLoadFallback,
+);
+const { ImagesSettings } = loadable(() => import('@/features/settings/screens/ImagesSettings.tsx'), lazyLoadFallback);
+const { ImageProcessingSetting } = loadable(
+    () => import('@/features/settings/screens/ImageProcessingSetting.tsx'),
     lazyLoadFallback,
 );
 const { ServerSettings } = loadable(() => import('@/features/settings/screens/ServerSettings.tsx'), lazyLoadFallback);
@@ -221,10 +227,33 @@ const MainApp = () => {
                                     element={<LibraryDuplicates />}
                                 />
                             </Route>
-                            <Route
-                                path={AppRoutes.settings.childRoutes.download.match}
-                                element={<DownloadSettings />}
-                            />
+                            <Route path={AppRoutes.settings.childRoutes.download.match}>
+                                <Route index element={<DownloadSettings />} />
+                                {/* TODO: deprecated - got moved to "settings/images/processing/downloads" */}
+                                <Route
+                                    path={AppRoutes.settings.childRoutes.download.childRoutes.conversions.match}
+                                    element={
+                                        <Navigate
+                                            to={
+                                                AppRoutes.settings.childRoutes.images.childRoutes.processingDownloads
+                                                    .path
+                                            }
+                                            replace
+                                        />
+                                    }
+                                />
+                            </Route>
+                            <Route path={AppRoutes.settings.childRoutes.images.match}>
+                                <Route index element={<ImagesSettings />} />
+                                <Route
+                                    path={AppRoutes.settings.childRoutes.images.childRoutes.processingDownloads.match}
+                                    element={<ImageProcessingSetting type={ImageProcessingType.DOWNLOAD} />}
+                                />
+                                <Route
+                                    path={AppRoutes.settings.childRoutes.images.childRoutes.processingServe.match}
+                                    element={<ImageProcessingSetting type={ImageProcessingType.SERVE} />}
+                                />
+                            </Route>
                             <Route path={AppRoutes.settings.childRoutes.backup.match} element={<Backup />} />
                             <Route path={AppRoutes.settings.childRoutes.server.match} element={<ServerSettings />} />
                             <Route path={AppRoutes.settings.childRoutes.webui.match} element={<WebUISettings />} />
@@ -248,6 +277,7 @@ const MainApp = () => {
                             <Route path={AppRoutes.sources.childRoutes.searchAll.match} element={<SearchAll />} />
                         </Route>
                         <Route path={AppRoutes.extension.match}>
+                            {/* TODO: deprecated - "source" and "extension" page got merged into "browse" */}
                             <Route
                                 index
                                 element={<Navigate to={AppRoutes.browse.path(BrowseTab.EXTENSIONS)} replace />}

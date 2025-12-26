@@ -27,12 +27,13 @@ import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholde
 import { EmptyViewAbsoluteCentered } from '@/base/components/feedback/EmptyViewAbsoluteCentered.tsx';
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { GetCategoriesSettingsQuery, GetCategoriesSettingsQueryVariables } from '@/lib/graphql/generated/graphql.ts';
-import { GET_CATEGORIES_SETTINGS } from '@/lib/graphql/queries/CategoryQuery.ts';
+import { GET_CATEGORIES_SETTINGS } from '@/lib/graphql/category/CategoryQuery.ts';
 import { MetadataDownloadSettings } from '@/features/downloads/Downloads.types.ts';
 import { ServerSettings } from '@/features/settings/Settings.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
-import { DownloadConversionSetting } from '@/features/downloads/components/DownloadConversionSetting.tsx';
+import { ListItemLink } from '@/base/components/lists/ListItemLink.tsx';
+import { AppRoutes } from '@/base/AppRoute.constants.ts';
 
 type DownloadSettingsType = Pick<
     ServerSettings,
@@ -128,10 +129,9 @@ export const DownloadSettings = () => {
                     onChange={(e) => updateSetting('downloadAsCbz', e.target.checked)}
                 />
             </ListItem>
-            <DownloadConversionSetting
-                conversions={downloadSettings?.downloadConversions}
-                updateSetting={(conversions) => updateSetting('downloadConversions', conversions)}
-            />
+            <ListItemLink to={AppRoutes.settings.childRoutes.images.childRoutes.processingDownloads.path}>
+                <ListItemText primary={t('download.settings.conversion.title')} />
+            </ListItemLink>
             <List
                 subheader={
                     <ListSubheader component="div" id="download-settings-auto-delete-downloads">

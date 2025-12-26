@@ -31,7 +31,7 @@ import { makeToast } from '@/base/utils/Toast.ts';
 import { MetadataUpdateSettings } from '@/features/app-updates/AppUpdateChecker.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitle } from '@/features/navigation-bar/hooks/useAppTitle.ts';
-import { AuthMode, DatabaseType, SortOrder } from '@/lib/graphql/generated/graphql';
+import { AuthMode, CbzMediaType, DatabaseType, SortOrder } from '@/lib/graphql/generated/graphql';
 import {
     AUTH_MODES_SELECT_VALUES,
     JWT_ACCESS_TOKEN_EXPIRY,
@@ -469,6 +469,17 @@ export const ServerSettings = () => {
                     ]}
                     handleChange={(value) => updateSetting('opdsChapterSortOrder', value)}
                 />
+                <SelectSetting<CbzMediaType>
+                    settingName={t('settings.server.opds.cbz_mime_type.title')}
+                    dialogDescription={t('settings.server.opds.cbz_mime_type.description')}
+                    value={serverSettings.opdsCbzMimetype}
+                    values={[
+                        [CbzMediaType.Legacy, { text: t('settings.server.opds.cbz_mime_type.legacy') }],
+                        [CbzMediaType.Modern, { text: t('settings.server.opds.cbz_mime_type.modern') }],
+                        [CbzMediaType.Compatible, { text: t('settings.server.opds.cbz_mime_type.compatible') }],
+                    ]}
+                    handleChange={(value) => updateSetting('opdsCbzMimetype', value)}
+                />
             </List>
             <KoreaderSyncSettings
                 settings={serverSettings}
@@ -513,6 +524,17 @@ export const ServerSettings = () => {
                     disabled={isH2Database}
                     isPassword
                 />
+                <ListItem>
+                    <ListItemText
+                        primary={t('settings.server.database.hikari_connection_pool.title')}
+                        secondary={t('settings.server.database.hikari_connection_pool.description')}
+                    />
+                    <Switch
+                        edge="end"
+                        checked={serverSettings.useHikariConnectionPool}
+                        onChange={(e) => updateSetting('useHikariConnectionPool', e.target.checked)}
+                    />
+                </ListItem>
             </List>
             <List
                 subheader={

@@ -242,11 +242,30 @@
         "title": "Auto-download"
       },
       "conversion": {
+        "call_timeout": "Call timeout",
         "compression_level": "Compression level",
-        "description": "In case no MIME-Type is defined, the \"default\" one will be used for the conversion.\nSet \"{{value}}\" as the target type to disable conversion for a MIME-Type",
+        "connect_timeout": "Connect timeout",
+        "description": "In case no MIME-Type is defined, the \"default\" one will be used for the processing.\nSet the target mode to disabled to prevent processing for a MIME-Type",
+        "headers": {
+          "button": "Headers ({{count}})",
+          "name": "Name",
+          "title": "Headers",
+          "value": "Value"
+        },
         "mime_type": "MIME-Type",
         "target": "MIME-Type target",
-        "title": "Download conversion"
+        "target_modes": {
+          "image": {
+            "description": "Convert images to different formats",
+            "title": "Image"
+          },
+          "title": "Target mode",
+          "url": {
+            "description": "Image conversion will be handled by an external service",
+            "title": "URL"
+          }
+        },
+        "title": "Image download processing"
       },
       "delete_chapters": {
         "label": {
@@ -425,6 +444,8 @@
       "label": {
         "day_one": "Day",
         "day_other": "Days",
+        "second_one": "Second",
+        "second_other": "Seconds",
         "today": "Today",
         "today_at": "Today at {{timeString}}",
         "yesterday": "Yesterday",
@@ -1274,6 +1295,9 @@
             "value": "Delete backups that are older than $t(global.date.value.label.day)"
           }
         },
+        "flags": {
+          "title": "Backup data"
+        },
         "label": {
           "interval": "Backup interval",
           "time": "Backup time"
@@ -1328,6 +1352,19 @@
       "title": {
         "device": "Device"
       }
+    },
+    "images": {
+      "processing": {
+        "download": {
+          "description": "Images are processed once during the download"
+        },
+        "serve": {
+          "description": "Images are processed on every request",
+          "title": "Image serve processing"
+        },
+        "title": "Image processing"
+      },
+      "title": "Images"
     },
     "label": {
       "hide_library_entries": "Hide entries already in library",
@@ -1444,6 +1481,10 @@
       },
       "database": {
         "address": "Database url",
+        "hikari_connection_pool": {
+          "description": "Improves performance, but may cause issues for some installations where data cannot be read from the database",
+          "title": "Hikari connection pool"
+        },
         "password": "$t(global.label.password)",
         "title": "Database",
         "type": {
@@ -1544,6 +1585,13 @@
             "unit_one": "item",
             "unit_other": "items"
           }
+        },
+        "cbz_mime_type": {
+          "compatible": "Compatible",
+          "description": "Controls the MimeType that Suwayomi sends in OPDS entries for CBZ archives. Also affects global CBZ download.\nModern follows recent IANA standard (2017), while LEGACY (deprecated mimetype for .cbz) and COMPATIBLE (deprecated mimetype for all comic archives) might be more compatible with older clients.",
+          "legacy": "Legacy",
+          "modern": "Modern",
+          "title": "CBZ MIME-Type"
         },
         "chapter_sort_order": {
           "label": {

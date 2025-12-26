@@ -15,6 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - (**Library**/**Manga**) Show chapter information on hover over continue reading button
 - (**Settings**) Add KOReader sync settings
 - (**Settings**) Add database settings
+- (**Settings**) Add hikari connection pool database setting
+- (**Settings**) Add OPDS CBZ MIME-Type setting
+- (**Settings**) Add automatic backup data inclusion setting
+- (**Settings**) Add "external image processing" settings for downloaded images
+- (**Settings**) Add serve image processing settings
 - (**Browse**) Add "open in webview" button in source browse page
 
 ### Changed
@@ -22,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - (**Category**) Prevent creating categories without a name
 - (**WebUI Update**) Do not require a forced page refresh when an update has been detected in case the app just got opened
 - (**Manga**) Change "duplicate entry detected" dialog "show entry" button to be a link instead of a button
+- (**Settings**) Move "Clear cache" setting to new "Images" setting page
 
 ### Fixed
 - (**General**) Fix tooltips sometimes causing a layout shift
@@ -41,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - (**Reader**) Fix current page detection in continuous horizontal mode with right-to-left reading mode
 - (**Reader**) Fix occasionally jumping to random pages in continuous reading modes
 - (**Extension**) Fix handling obsolete extensions as updatable in case they are marked as having an available update
+- (**Extension**) Fix being unable to uninstall an extension that can be updated
 - (**Theme**) Fix loading of fonts defined in themes
 - (**Reader**) Fix broken scrolling in continuous horizontal reading mode
 
@@ -79,6 +86,7 @@ Thanks to everyone that contributed to this release
 - (**General**) Add support for the suwayomi WebView
 - (**Settings**) Add new OPDS server settings
 - (**Settings**) Add new "simple login" authentication setting
+- (**Settings**) Add "download conversion" settings
 - (**Reader**) Add option to change auto scroll direction by using the scroll backward/forward hotkeys while auto scrolling is active
 - (**Manga**) Display score and total chapters, if available, in the tracker search results
 - (**Manga**) Add support for private track bindings

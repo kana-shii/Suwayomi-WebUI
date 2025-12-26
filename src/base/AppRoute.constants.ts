@@ -69,6 +69,27 @@ export const AppRoutes = {
             download: {
                 match: 'download',
                 path: '/settings/download',
+                childRoutes: {
+                    // TODO: deprecated - got moved to "settings/images/processing/downloads"
+                    conversions: {
+                        match: 'conversions',
+                        path: '/settings/download/conversions',
+                    },
+                },
+            },
+            images: {
+                match: 'images',
+                path: '/settings/images',
+                childRoutes: {
+                    processingDownloads: {
+                        match: 'processing/downloads',
+                        path: '/settings/images/processing/downloads',
+                    },
+                    processingServe: {
+                        match: 'processing/serve',
+                        path: '/settings/images/processing/serve',
+                    },
+                },
             },
             backup: {
                 match: 'backup',
