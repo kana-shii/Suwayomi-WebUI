@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased] (Preview)
 
+## [20251230.01] (r2937) - 2025-12-30
+
 ### Added
 - (**Navigation**) Show extension update information in app navigation
 - (**General**) Add support for "ui login" authentication mode
@@ -56,19 +58,28 @@ Feel free to translate the project on [Weblate](https://hosted.weblate.org/proje
 
 Thanks to everyone that contributed to the translation of this project.
 
+#### Added
+- Russian (by Micka149)
+
 #### Updated
 - Tamil (by தமிழ்நேரம்)
 - Polish (by UnknownSkyrimPasserby)
-- Korean (by Kim KKAng)
+- Korean (by Kim KKAng, jun)
 - Japanese (by marimo, 9811pc)
-- Spanish (by zeedif)
-- Chinese (Traditional) (by plum7x)
+- Spanish (by zeedif, Clara Bujeda)
 - Vietnamese (by Nguyễn Trung Đức)
 - Chinese (Simplified) (by 清水汐音)
+- Chinese (Traditional) (by plum7x)
 - German (by Constantin Piber, Christian Heinrich)
+- Portuguese (Brazil) (by Adrian Rodrigues)
+- French (by mrintrepide)
+- Italian (by Gino Cicatiello)
+- Turkish (by Metin)
 
-#### Removed (less than 75% translated)
-- "Italian (it)" (71.6%)
+### Contributors
+Thanks to everyone that contributed to this release
+
+@schroda, @github-actions[bot], @weblate, @cpiber, @ginocic, @infyProductions, @Metincloup, @Micka149, @dejavui, @TheRay82, @plum7x, @aizhimoran, @zeedif, @AdrianRSouza, @ritma-bws, @CBujeda, @rogervc, @UnknownSkyrimPasserby, @mrintrepide, @q1114938967, @sksper1-stack, @renjfk, @Smileskun, @bornav, @9811pc, @imammansyur, @cho558, @marimo-nekomimi, @Dusky-dev
 
 ## [20250801.01] (r2717) - 2025-08-01
 
@@ -620,7 +631,8 @@ Thanks to everyone that contributed to this release
 
 @schroda, @jesusFx, @QuietBlade, @anvstin, @guohuageng, @plum7x, @HiyoriTUK, @aizhimoran, @JiPaix, @Yuhyeong, @a18ccms, @chancez, @rickymcmuffin, @zmmx, @alexandrejournet, @ibaraki-douji, @nitezs, @misaka10843, @Becods, @skrewde, @xconkhi9x, @cnmorocho, @Wip-Sama, @Kefir2105, @RafieHardinur, @SuperMario229, @Alexandre-P-J, @AriaMoradi, @NathanBnm, @FumoVite, @JoHena, @bandysharif, @DevCoz, @comradekingu, @Zereef, @akabhirav
 
-[unreleased]: https://github.com/suwayomi/suwayomi-webui/compare/v20250801.01...HEAD
+[unreleased]: https://github.com/suwayomi/suwayomi-webui/compare/v20251230.01...HEAD
+[20251230.01]: https://github.com/suwayomi/suwayomi-webui/compare/v20250801.01...v20251230.01
 [20250801.01]: https://github.com/suwayomi/suwayomi-webui/compare/v20250731.01...v20250801.01
 [20250731.01]: https://github.com/suwayomi/suwayomi-webui/compare/v20250703.01...v20250731.01
 [20250703.01]: https://github.com/suwayomi/suwayomi-webui/compare/v1.5.1...v20250703.01
