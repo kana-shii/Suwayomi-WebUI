@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { findDuplicatesByTitle } from '@/features/library/util/LibraryDuplicates.util.ts';
+import { findDuplicateMangas } from '@/features/library/util/LibraryDuplicates.util.ts';
 import {
     LibraryDuplicatesDescriptionWorkerInput,
     LibraryDuplicatesWorkerInput,
@@ -237,7 +237,7 @@ self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
     }
 
     if (onlyTitle) {
-        const titleResult = findDuplicatesByTitle(mangas);
+        const titleResult = findDuplicateMangas(mangas);
         postMessage(titleResult);
         return;
     }
@@ -246,7 +246,7 @@ self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
     const resultsToMerge: TMangaDuplicates<TMangaDuplicate>[] = [];
 
     // title always cheap -> run synchronously
-    resultsToMerge.push(findDuplicatesByTitle(mangas));
+    resultsToMerge.push(findDuplicateMangas(mangas));
 
     // description (chunked) if enabled
     if (checkAlternativeTitles) {
