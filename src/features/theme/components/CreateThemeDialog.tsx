@@ -11,7 +11,6 @@ import { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import { bindDialog } from 'material-ui-popup-state/hooks';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -19,6 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
 import { jsonrepair } from 'jsonrepair';
+import { AwaitableComponentProps } from 'awaitable-component';
 import { getErrorMessage, jsonSaveParse } from '@/lib/HelperFunctions.ts';
 import { AppTheme, isThemeNameUnique } from '@/features/theme/services/AppThemes.ts';
 import {
@@ -31,6 +31,8 @@ import { LoadingPlaceholder } from '@/base/components/feedback/LoadingPlaceholde
 import { defaultPromiseErrorHandler } from '@/lib/DefaultPromiseErrorHandler.ts';
 import { MetadataThemeSettings } from '@/features/theme/AppTheme.types.ts';
 import { TranslationKey } from '@/base/Base.types.ts';
+import { CheckboxInput } from '@/base/components/inputs/CheckboxInput.tsx';
+import { useAppThemeContext } from '@/features/theme/AppThemeContext.tsx';
 
 const baseCustomTheme: AppTheme = {
     id: '',
@@ -62,7 +64,7 @@ const baseCustomTheme: AppTheme = {
     },
 };
 
-type DialogMode = 'create' | 'edit';
+type DialogMode = 'create' | 'edit' | 'save_dynamic';
 
 const dialogModeToTranslationKey: Record<
     DialogMode,
@@ -88,14 +90,23 @@ const dialogModeToTranslationKey: Record<
         success: 'settings.appearance.theme.edit.success',
         failure: 'settings.appearance.theme.edit.failure',
     },
+    save_dynamic: {
+        title: 'settings.appearance.manga_dynamic_color_schemes.save',
+        button: 'global.button.save',
+        action: 'settings.appearance.theme.create.action',
+        success: 'settings.appearance.theme.create.success',
+        failure: 'settings.appearance.theme.create.failure',
+    },
 };
 
 export const ThemeCreationDialog = ({
-    bindDialogProps,
     mode,
     appTheme = baseCustomTheme,
-}: {
-    bindDialogProps: ReturnType<typeof bindDialog>;
+    isVisible,
+    onExitComplete,
+    onSubmit,
+    onDismiss,
+}: AwaitableComponentProps<void> & {
     mode: DialogMode;
     appTheme?: AppTheme;
 }) => {
@@ -105,6 +116,7 @@ export const ThemeCreationDialog = ({
         settings: { customThemes },
         request: { loading, error, refetch },
     } = useMetadataServerSettings();
+    const { setAppTheme } = useAppThemeContext();
 
     const updateCustomThemes = createUpdateMetadataServerSettings<keyof MetadataThemeSettings>((e) => {
         throw e;
@@ -114,10 +126,11 @@ export const ThemeCreationDialog = ({
     const [invalidName, setInvalidName] = useState(false);
     const [invalidTheme, setInvalidTheme] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
-    const [didThemeChange, setDidThemeChange] = useState(mode === 'create');
+    const [didThemeChange, setDidThemeChange] = useState(['create', 'save_dynamic'].includes(mode));
+    const [setAsActiveTheme, setSetAsActiveTheme] = useState(false);
 
     return (
-        <Dialog {...bindDialogProps} fullWidth maxWidth="md">
+        <Dialog open={isVisible} onTransitionExited={onExitComplete} fullWidth maxWidth="md">
             <DialogTitle>{t(dialogModeToTranslationKey[mode].title)}</DialogTitle>
             <DialogContent>
                 {loading && <LoadingPlaceholder />}
@@ -166,7 +179,7 @@ export const ThemeCreationDialog = ({
                             onChange={(e) => {
                                 const name = e.target.value.trim();
 
-                                const isValidLength = name.length <= 16;
+                                const isValidLength = name.length <= 32;
                                 const isUnique = isThemeNameUnique(name, customThemes);
                                 setInvalidName(!isValidLength || !isUnique);
 
@@ -212,36 +225,55 @@ export const ThemeCreationDialog = ({
                 )}
             </DialogContent>
             <DialogActions>
-                <Button autoFocus onClick={bindDialogProps.onClose} color="primary">
-                    {t('global.button.cancel')}
-                </Button>
-                <Button
-                    disabled={invalidTheme || invalidName || isCreating || !didThemeChange || !theme.id.length}
-                    onClick={(e) => {
-                        makeToast(t(dialogModeToTranslationKey[mode].action, { theme: theme.getName() }), 'info');
-
-                        setIsCreating(true);
-                        updateCustomThemes('customThemes', { ...customThemes, [theme.id]: theme })
-                            .then(() => {
+                <Stack sx={{ width: '100%' }}>
+                    <CheckboxInput
+                        sx={{ margin: 0 }}
+                        size="small"
+                        label={t('settings.appearance.manga_dynamic_color_schemes.set_active')}
+                        checked={setAsActiveTheme}
+                        onChange={(_, checked) => setSetAsActiveTheme(checked)}
+                    />
+                    <Stack sx={{ flexDirection: 'row', justifyContent: 'end' }}>
+                        <Button autoFocus onClick={() => onDismiss()} color="primary">
+                            {t('global.button.cancel')}
+                        </Button>
+                        <Button
+                            disabled={invalidTheme || invalidName || isCreating || !didThemeChange || !theme.id.length}
+                            onClick={() => {
                                 makeToast(
-                                    t(dialogModeToTranslationKey[mode].success, { theme: theme.getName() }),
-                                    'success',
+                                    t(dialogModeToTranslationKey[mode].action, { theme: theme.getName() }),
+                                    'info',
                                 );
-                                bindDialogProps.onClose(e);
-                            })
-                            .catch((updateError) =>
-                                makeToast(
-                                    t(dialogModeToTranslationKey[mode].failure, { theme: theme.getName() }),
-                                    'error',
-                                    getErrorMessage(updateError),
-                                ),
-                            )
-                            .finally(() => setIsCreating(false));
-                    }}
-                    color="primary"
-                >
-                    {t(dialogModeToTranslationKey[mode].button)}
-                </Button>
+
+                                setIsCreating(true);
+                                updateCustomThemes('customThemes', { ...customThemes, [theme.id]: theme })
+                                    .then(() => {
+                                        makeToast(
+                                            t(dialogModeToTranslationKey[mode].success, { theme: theme.getName() }),
+                                            'success',
+                                        );
+
+                                        if (setAsActiveTheme) {
+                                            setAppTheme(theme.getName());
+                                        }
+
+                                        onSubmit();
+                                    })
+                                    .catch((updateError) =>
+                                        makeToast(
+                                            t(dialogModeToTranslationKey[mode].failure, { theme: theme.getName() }),
+                                            'error',
+                                            getErrorMessage(updateError),
+                                        ),
+                                    )
+                                    .finally(() => setIsCreating(false));
+                            }}
+                            color="primary"
+                        >
+                            {t(dialogModeToTranslationKey[mode].button)}
+                        </Button>
+                    </Stack>
+                </Stack>
             </DialogActions>
         </Dialog>
     );
