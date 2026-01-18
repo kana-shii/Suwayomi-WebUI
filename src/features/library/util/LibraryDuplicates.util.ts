@@ -104,7 +104,6 @@ export const findDuplicatesByTitleAndAlternativeTitles = <Manga extends TMangaDu
 };
 
 /* ---------------------------------------
- * Duplicate matching mode selector (code-only)
  * 1 = Suwayomi method (title + alternative titles)
  * 2 = Exact title match
  * 3 = Fuzzy title (word-boundary, case-insensitive)
