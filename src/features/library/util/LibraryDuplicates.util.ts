@@ -110,7 +110,7 @@ export const findDuplicatesByTitleAndAlternativeTitles = <Manga extends TMangaDu
  * 4 = Title substring (case-insensitive)
  * -------------------------------------- */
 export type DuplicateMatchMode = 1 | 2 | 3 | 4;
-export const DUPLICATE_MATCH_MODE: DuplicateMatchMode = 1;
+export const DUPLICATE_MATCH_MODE: DuplicateMatchMode = 3;
 
 /* -------- Exact title match -------- */
 export const findDuplicatesExactTitle = <Manga extends Pick<MangaType, 'title'>>(
