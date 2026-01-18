@@ -6,8 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { useTranslation } from 'react-i18next';
 import { useCallback } from 'react';
+import { useLingui } from '@lingui/react/macro';
 import {
     SourceDisplayNameInfo,
     SourceIdInfo,
@@ -52,9 +52,10 @@ export class Sources {
 
     static groupByLanguage<Source extends SourceIdInfo & SourceLanguageInfo & SourceDisplayNameInfo & SourceMetaInfo>(
         sources: Source[],
+        { withPinnedGroup = false }: { withPinnedGroup?: boolean } = {},
     ): Record<string, Source[]> {
         const sourcesByLanguage = Object.groupBy(sources, (source) => {
-            if (getSourceMetadata(source).isPinned) {
+            if (withPinnedGroup && getSourceMetadata(source).isPinned) {
                 return DefaultLanguage.PINNED;
             }
 
@@ -64,11 +65,11 @@ export class Sources {
             const isAPinned = a === DefaultLanguage.PINNED;
             const isBPinned = b === DefaultLanguage.PINNED;
 
-            if (isAPinned) {
+            if (withPinnedGroup && isAPinned) {
                 return -1;
             }
 
-            if (isBPinned) {
+            if (withPinnedGroup && isBPinned) {
                 return 1;
             }
 
@@ -151,13 +152,13 @@ export class Sources {
         languages: string[];
         setLanguages: (languages: string[]) => void;
     } {
-        const { t } = useTranslation();
+        const { t } = useLingui();
         const {
             settings: { sourceLanguages },
         } = useMetadataServerSettings();
 
         const updateSetting = createUpdateMetadataServerSettings<'sourceLanguages'>((e) =>
-            makeToast(t('global.error.label.failed_to_save_changes', getErrorMessage(e)), 'error'),
+            makeToast(t`Failed to save changes`, 'error', getErrorMessage(e)),
         );
         const setLanguages = useCallback((languages: string[]) => updateSetting('sourceLanguages', languages), []);
 

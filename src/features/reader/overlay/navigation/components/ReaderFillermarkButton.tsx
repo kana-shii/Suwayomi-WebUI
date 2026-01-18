@@ -7,17 +7,17 @@
  */
 
 import IconButton from '@mui/material/IconButton';
-import { useTranslation } from 'react-i18next';
 import { memo } from 'react';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { useLingui } from '@lingui/react/macro';
 import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { ChapterAction, TChapterReader } from '@/features/chapter/Chapter.types.ts';
 import { CHAPTER_ACTION_TO_TRANSLATION } from '@/features/chapter/Chapter.constants.ts';
 
 const BaseReaderFillermarkButton = ({ id, isFillermarked }: Pick<TChapterReader, 'id' | 'isFillermarked'>) => {
-    const { t } = useTranslation();
+    const { t } = useLingui();
 
     const fillermarkAction: Extract<ChapterAction, 'unfillermark' | 'fillermark'> = isFillermarked
         ? 'unfillermark'

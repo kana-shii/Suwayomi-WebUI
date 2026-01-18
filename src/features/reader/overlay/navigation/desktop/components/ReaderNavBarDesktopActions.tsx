@@ -7,12 +7,12 @@
  */
 
 import Stack from '@mui/material/Stack';
-import { useTranslation } from 'react-i18next';
 import IconButton from '@mui/material/IconButton';
 import DownloadIcon from '@mui/icons-material/Download';
 import ReplayIcon from '@mui/icons-material/Replay';
 import { memo, useMemo, useRef } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useLingui } from '@lingui/react/macro';
 import { CustomTooltip } from '@/base/components/CustomTooltip.tsx';
 import { Chapters } from '@/features/chapter/services/Chapters.ts';
 import { DownloadStateIndicator } from '@/base/components/downloads/DownloadStateIndicator.tsx';
@@ -27,7 +27,7 @@ import { useReaderChaptersStore, useReaderPagesStore } from '@/features/reader/s
 import { ChapterDownloadInfo, ChapterIdInfo } from '@/features/chapter/Chapter.types.ts';
 
 const DownloadButton = ({ id = -1, isDownloaded }: ChapterIdInfo & ChapterDownloadInfo) => {
-    const { t } = useTranslation();
+    const { t } = useLingui();
 
     const downloadStatus = Chapters.useDownloadStatusFromCache(id);
 
@@ -69,7 +69,7 @@ export const ReaderNavBarDesktopActions = memo(() => {
         realUrl: state.chapters.currentChapter?.realUrl ?? FALLBACK_CHAPTER.realUrl,
     }));
 
-    const { t } = useTranslation();
+    const { t } = useLingui();
     const { pageLoadStates, setPageLoadStates, setRetryFailedPagesKeyPrefix } = useReaderPagesStore((state) => ({
         pageLoadStates: state.pages.pageLoadStates,
         setPageLoadStates: state.pages.setPageLoadStates,
@@ -88,7 +88,7 @@ export const ReaderNavBarDesktopActions = memo(() => {
             <ReaderLibraryButton />
             <ReaderBookmarkButton id={id} isBookmarked={isBookmarked} />
             <ReaderFillermarkButton id={id} isFillermarked={isFillermarked} />
-            <CustomTooltip title={t('reader.button.retry_load_pages')} disabled={!haveSomePagesFailedToLoad}>
+            <CustomTooltip title={t`Retry errored pages`} disabled={!haveSomePagesFailedToLoad}>
                 <IconButton
                     onClick={() => {
                         setPageLoadStates((statePageLoadStates) =>
@@ -107,12 +107,12 @@ export const ReaderNavBarDesktopActions = memo(() => {
                 </IconButton>
             </CustomTooltip>
             <DownloadButton id={id} isDownloaded={isDownloaded} />
-            <CustomTooltip title={t('global.button.open_browser')} disabled={!realUrl}>
+            <CustomTooltip title={t`Open in browser`} disabled={!realUrl}>
                 <IconButton disabled={!realUrl} href={realUrl ?? ''} rel="noreferrer" target="_blank" color="inherit">
                     <IconBrowser />
                 </IconButton>
             </CustomTooltip>
-            <CustomTooltip title={t('global.button.open_webview')} disabled={!realUrl}>
+            <CustomTooltip title={t`Open in WebView`} disabled={!realUrl}>
                 <IconButton
                     disabled={!realUrl}
                     href={realUrl ? requestManager.getWebviewUrl(realUrl) : ''}
