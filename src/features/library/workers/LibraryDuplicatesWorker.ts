@@ -26,7 +26,9 @@ class UnionFind {
 
     constructor(n: number) {
         this.parent = new Array(n);
-        for (let i = 0; i < n; i += 1) {this.parent[i] = i;}
+        for (let i = 0; i < n; i += 1) {
+            this.parent[i] = i;
+        }
     }
 
     find(a: number): number {
@@ -47,7 +49,9 @@ class UnionFind {
     union(a: number, b: number) {
         const pa = this.find(a);
         const pb = this.find(b);
-        if (pa === pb) {return;}
+        if (pa === pb) {
+            return;
+        }
         this.parent[pb] = pa;
     }
 }
@@ -69,10 +73,12 @@ function mergeDuplicateMapsAsComponents(
             const idxs: number[] = [];
             for (let i = 0; i < group.length; i += 1) {
                 const idx = idToIndex.get(String(group[i].id));
-                if (idx !== undefined) {idxs.push(idx);}
+                if (idx !== undefined) {
+                    idxs.push(idx);
+                }
             }
             if (idxs.length > 1) {
-                const base = idxs[0];
+                const [base] = idxs;
                 for (let j = 1; j < idxs.length; j += 1) {
                     uf.union(base, idxs[j]);
                 }
@@ -84,8 +90,11 @@ function mergeDuplicateMapsAsComponents(
     for (let i = 0; i < n; i += 1) {
         const root = uf.find(i);
         const arr = rootToMembers.get(root);
-        if (arr) {arr.push(i);}
-        else {rootToMembers.set(root, [i]);}
+        if (arr) {
+            arr.push(i);
+        } else {
+            rootToMembers.set(root, [i]);
+        }
     }
 
     const result: TMangaDuplicates<TMangaDuplicate> = {};
@@ -108,8 +117,6 @@ function mergeDuplicateMapsAsComponents(
     return result;
 }
 
-// Helper: map a worker-returned duplicate map (which may contain minimal manga objects)
-// back to full mangas using the original mangas array and prefer a title-based key.
 function mapHashResultToFull(
     partial: TMangaDuplicates<any>,
     fullMangas: TMangaDuplicate[],
@@ -126,18 +133,17 @@ function mapHashResultToFull(
             const item = group[gi];
             const id = String(item.id);
             const full = idToManga.get(id);
-            if (full) {mappedGroup.push(full);}
-            else {
-                // Fallback: if we don't have the original full manga, try to use whatever was returned
+            if (full) {
+                mappedGroup.push(full);
+            } else {
                 mappedGroup.push(item as TMangaDuplicate);
             }
         }
         if (mappedGroup.length > 1) {
             const outKey = mappedGroup[0].title ?? key;
-            // ensure we don't overwrite an existing key (preserve first-seen)
-            if (mapped[outKey] === undefined) {mapped[outKey] = mappedGroup;}
-            else {
-                // if key collision, append uniquely
+            if (mapped[outKey] === undefined) {
+                mapped[outKey] = mappedGroup;
+            } else {
                 let idx = 1;
                 let candidate = `${outKey}-${idx}`;
                 while (mapped[candidate] !== undefined) {
@@ -155,9 +161,7 @@ function mapHashResultToFull(
 self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
     const { mangas, checkAlternativeTitles, checkTrackedBySameTracker, checkImageHashes } = event.data;
 
-    // title-only
     const onlyTitle = !checkAlternativeTitles && !checkTrackedBySameTracker && !checkImageHashes;
-    // exclusive modes for each check
     const onlyTracker = checkTrackedBySameTracker && !checkAlternativeTitles && !checkImageHashes;
     const onlyDescription = checkAlternativeTitles && !checkTrackedBySameTracker && !checkImageHashes;
     const onlyImage = checkImageHashes && !checkTrackedBySameTracker && !checkAlternativeTitles;
@@ -195,24 +199,30 @@ self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
                 }).promise,
             );
         }
+
         const chunkedResults = await Promise.all(chunkPromises);
         const mergedResult: TMangaDuplicates<TMangaDuplicate> = {};
         const cleanedUpTitleToOriginalTitle: Record<string, string> = {};
+
         for (let ci = 0; ci < chunkedResults.length; ci += 1) {
             const chunkedResult = chunkedResults[ci];
             const entries = Object.entries(chunkedResult);
             for (let ei = 0; ei < entries.length; ei += 1) {
                 const [title, duplicates] = entries[ei];
                 const cleanedTitle = enhancedCleanup(title);
+
                 if (cleanedUpTitleToOriginalTitle[cleanedTitle] === undefined) {
                     cleanedUpTitleToOriginalTitle[cleanedTitle] = title;
                 }
+
                 const originalTitle = cleanedUpTitleToOriginalTitle[cleanedTitle];
+
                 if (mergedResult[originalTitle] === undefined) {
                     mergedResult[originalTitle] = duplicates;
                 }
             }
         }
+
         postMessage(mergedResult);
         return;
     }
@@ -222,15 +232,16 @@ self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
         const imageWorker = new Worker(new URL('LibraryDuplicatesImageHashWorker.ts', import.meta.url), {
             type: 'module',
         });
+
         imageWorker.onmessage = (ev: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) => workerPromise.resolve(ev.data);
-        // pass minimal mangas for hashing to reduce structured-clone overhead
+
         imageWorker.postMessage({
             mangas: mangas.map((m) => ({ id: m.id, thumbnailUrl: (m as any).thumbnailUrl })),
         } as { mangas: TMangaDuplicate[] });
+
         const imageResult = await workerPromise.promise;
         imageWorker.terminate();
 
-        // Map the image-hash result back to full mangas (so group labels can use titles)
         const mappedImageResult = mapHashResultToFull(imageResult as TMangaDuplicates<any>, mangas);
         postMessage(mappedImageResult);
         return;
@@ -242,13 +253,10 @@ self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
         return;
     }
 
-    // otherwise multiple toggles enabled: compute all enabled checks in parallel and merge
     const resultsToMerge: TMangaDuplicates<TMangaDuplicate>[] = [];
 
-    // title always cheap -> run synchronously
     resultsToMerge.push(findDuplicatesByTitle(mangas));
 
-    // description (chunked) if enabled
     if (checkAlternativeTitles) {
         const chunkPromises: Promise<TMangaDuplicates<TMangaDuplicate>>[] = [];
         for (let chunkStart = 0; chunkStart < mangas.length; chunkStart += MANGAS_PER_CHUNK) {
@@ -258,71 +266,92 @@ self.onmessage = async (event: MessageEvent<LibraryDuplicatesWorkerInput>) => {
                     const worker = new Worker(new URL('LibraryDuplicatesDescriptionWorker.ts', import.meta.url), {
                         type: 'module',
                     });
+
                     worker.onmessage = (subWorkerEvent: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) =>
                         workerPromise.resolve(subWorkerEvent.data);
+
                     worker.postMessage({
                         mangas,
                         mangasToCheck: mangas.slice(chunkStart, chunkStart + MANGAS_PER_CHUNK),
                     } satisfies LibraryDuplicatesDescriptionWorkerInput);
+
                     return workerPromise.promise;
                 }).promise,
             );
         }
+
         const chunkedResults = await Promise.all(chunkPromises);
         const mergedTitleResult: TMangaDuplicates<TMangaDuplicate> = {};
         const cleanedUpTitleToOriginalTitle: Record<string, string> = {};
+
         for (let ci = 0; ci < chunkedResults.length; ci += 1) {
             const chunkedResult = chunkedResults[ci];
             const entries = Object.entries(chunkedResult);
+
             for (let ei = 0; ei < entries.length; ei += 1) {
                 const [title, duplicates] = entries[ei];
                 const cleanedTitle = enhancedCleanup(title);
+
                 if (cleanedUpTitleToOriginalTitle[cleanedTitle] === undefined) {
                     cleanedUpTitleToOriginalTitle[cleanedTitle] = title;
                 }
+
                 const originalTitle = cleanedUpTitleToOriginalTitle[cleanedTitle];
+
                 if (mergedTitleResult[originalTitle] === undefined) {
                     mergedTitleResult[originalTitle] = duplicates;
                 }
             }
         }
+
         resultsToMerge.push(mergedTitleResult);
     }
 
-    // tracker if enabled
     let trackerWorker: Worker | null = null;
+
     if (checkTrackedBySameTracker) {
         const wp = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
+
         trackerWorker = new Worker(new URL('LibraryDuplicatesTrackerWorker.ts', import.meta.url), {
             type: 'module',
         });
+
         trackerWorker.onmessage = (ev: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) => wp.resolve(ev.data);
+
         trackerWorker.postMessage({ mangas } as { mangas: TMangaDuplicate[] });
+
         const trackerResult = await wp.promise;
+
         resultsToMerge.push(trackerResult);
     }
 
-    // image hashes if enabled
     if (checkImageHashes) {
         const wp = new ControlledPromise<TMangaDuplicates<TMangaDuplicate>>();
+
         const imageWorker = new Worker(new URL('LibraryDuplicatesImageHashWorker.ts', import.meta.url), {
             type: 'module',
         });
+
         imageWorker.onmessage = (ev: MessageEvent<TMangaDuplicates<TMangaDuplicate>>) => wp.resolve(ev.data);
-        // pass minimal mangas for hashing to reduce structured-clone overhead
+
         imageWorker.postMessage({
             mangas: mangas.map((m) => ({ id: m.id, thumbnailUrl: (m as any).thumbnailUrl })),
         } as { mangas: TMangaDuplicate[] });
+
         const imageResult = await wp.promise;
+
         imageWorker.terminate();
 
-        // Map the image-hash result back to full mangas before merging
         const mappedImageResult = mapHashResultToFull(imageResult as TMangaDuplicates<any>, mangas);
+
         resultsToMerge.push(mappedImageResult);
     }
 
-    if (trackerWorker) {trackerWorker.terminate();}
+    if (trackerWorker) {
+        trackerWorker.terminate();
+    }
 
     const merged = mergeDuplicateMapsAsComponents(mangas, resultsToMerge);
+
     postMessage(merged);
 };
