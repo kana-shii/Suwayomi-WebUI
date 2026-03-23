@@ -56,10 +56,10 @@ jobs:
       - name: Checkout preview branch
         uses: actions/checkout@v4
         with:
-          repository: "Suwayomi/Suwayomi-WebUI-preview"
+          repository: "xkana-shii/Suwayomi-WebUI-preview"
           ref: main
           path: preview
-          token: ${{ secrets.BUILD_PREVIEW_TOKEN }}
+          token: ${{ secrets.BOT_PAT }}
 
       - name: Create Tag
         run: |
@@ -79,19 +79,19 @@ jobs:
       - name: Upload CI Release
         uses: ncipollo/release-action@v1
         with:
-          token: ${{ secrets.BUILD_PREVIEW_TOKEN }}
+          token: ${{ secrets.BOT_PAT }}
           artifacts: "master/buildZip/*"
-          owner: "Suwayomi"
+          owner: "xkana-shii"
           repo: "Suwayomi-WebUI-preview"
           tag: ${{ steps.GenTagName.outputs.value }}
 
       - name: Checkout github pages repo
         uses: actions/checkout@v4
         with:
-          repository: "Suwayomi-WebUI-preview/suwayomi-webui-preview.github.io"
+          repository: "xkana-shii/Suwayomi-WebUI-preview/suwayomi-webui-preview.github.io"
           ref: main
           path: gh-pages
-          token: ${{ secrets.DEPLOY_PREVIEW_TOKEN }}
+          token: ${{ secrets.BOT_PAT }}
 
       - name: Deploy github pages
         run: |
