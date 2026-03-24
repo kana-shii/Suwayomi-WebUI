@@ -40,6 +40,26 @@ import { GridLayout } from '@/base/Base.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitleAndAction } from '@/features/navigation-bar/hooks/useAppTitleAndAction.ts';
 
+const TRACKER_URLS: Record<string, (remoteId: string) => string> = {
+    // 1: MyAnimeList
+    '1': (id) => `https://myanimelist.net/manga/${id}`,
+    // 4: MangaUpdates
+    '4': (id) => `https://www.mangaupdates.com/series.html?id=${id}`,
+    // 7: MangaBaka
+    '7': (id) => `https://mangabaka.org/${id}`,
+};
+
+function getTrackerLink(groupLabel: string): { url: string; trackerId: string; remoteId: string } | null {
+    // Look for parenthetical (trackerId::remoteId) at end of group label
+    const match = groupLabel.match(/\((\d+)::(\d+)\)$/);
+    if (!match) {return null;}
+    const [, trackerId, remoteId] = match;
+    const urlMaker = TRACKER_URLS[trackerId];
+    if (!urlMaker) {return null;}
+    return { url: urlMaker(remoteId), trackerId, remoteId };
+}
+// -----------------------------------------------------------------
+
 export const LibraryDuplicates = () => {
     const { t } = useLingui();
 
@@ -168,15 +188,6 @@ export const LibraryDuplicates = () => {
 
             // If worker returned debug info, log it so you can inspect distances in the browser console
             if (payload && (debugSamples || (payload as any).thresholdUsed !== undefined)) {
-                // eslint-disable-next-line no-console
-                console.groupCollapsed('LibraryDuplicates image-hash debug (worker)');
-                // eslint-disable-next-line no-console
-                console.log('thresholdUsed:', (payload as any).thresholdUsed);
-                // eslint-disable-next-line no-console
-                console.log('sample distances (first 200):', debugSamples);
-                // eslint-disable-next-line no-console
-                console.groupEnd();
-                // set the result groups so UI still works in debug mode
                 setMangasByTitle((payload as any).result ?? {});
                 setIsCheckingForDuplicates(false);
                 return;
@@ -252,7 +263,21 @@ export const LibraryDuplicates = () => {
                 groupContent={(index) => (
                     <StyledGroupHeader isFirstItem={index === 0}>
                         <Typography variant="h5" component="h2">
-                            {duplicatedTitles[index]}
+                            {(() => {
+                                const info = getTrackerLink(duplicatedTitles[index]);
+                                return info ? (
+                                    <a
+                                        href={info.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ color: 'inherit', textDecoration: 'underline' }}
+                                    >
+                                        {duplicatedTitles[index]}
+                                    </a>
+                                ) : (
+                                    duplicatedTitles[index]
+                                );
+                            })()}
                         </Typography>
                     </StyledGroupHeader>
                 )}
@@ -275,7 +300,21 @@ export const LibraryDuplicates = () => {
         <Box key={title}>
             <StyledGroupHeader sx={{ pt: index === 0 ? undefined : 0, pb: 0 }} isFirstItem={false}>
                 <Typography variant="h5" component="h2">
-                    {title}
+                    {(() => {
+                        const info = getTrackerLink(title);
+                        return info ? (
+                            <a
+                                href={info.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: 'inherit', textDecoration: 'underline' }}
+                            >
+                                {title}
+                            </a>
+                        ) : (
+                            title
+                        );
+                    })()}
                 </Typography>
             </StyledGroupHeader>
             <BaseMangaGrid
