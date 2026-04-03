@@ -9,6 +9,7 @@
 import React from 'react';
 import { CheckboxInput } from '@/base/components/inputs/CheckboxInput.tsx';
 import type { IPos } from '@/features/source/Source.types.ts';
+import Box from '@mui/material/Box';
 
 interface Props {
     state: boolean;
@@ -32,7 +33,20 @@ export const CheckBoxFilter: React.FC<Props> = (props: Props) => {
     };
 
     if (state !== undefined) {
-        return <CheckboxInput label={name} checked={val} onChange={handleChange} />;
+        return (
+            <Box
+                sx={{
+                    borderRadius: 2,
+                    px: 4,
+                    mx: -1,
+                    '&:hover': {
+                        backgroundColor: 'action.hover',
+                    },
+                }}
+            >
+                <CheckboxInput label={name} checked={val} onChange={handleChange} />
+            </Box>
+        );
     }
     return null;
 };
