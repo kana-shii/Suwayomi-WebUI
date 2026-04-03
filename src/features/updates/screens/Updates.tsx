@@ -14,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
 import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLingui } from '@lingui/react/macro';
 import { Link } from 'react-router-dom';
@@ -289,46 +290,47 @@ export const Updates: React.FC = () => {
                                 </CardActionArea>
 
                                 {extraChapters.length > 0 ? (
-                                    <Collapse in={expanded} timeout="auto" unmountOnExit>
-                                        {extraChapters.map((chapter) => (
-                                            <CardActionArea
-                                                key={chapter.id}
-                                                component={Link}
-                                                to={AppRoutes.reader.path(chapter.manga.id, chapter.sourceOrder)}
-                                                state={Chapters.getReaderOpenChapterLocationState(chapter)}
-                                                sx={{
-                                                    color: (theme) =>
-                                                        theme.palette.text[chapter.isRead ? 'disabled' : 'primary'],
-                                                }}
-                                            >
-                                                <ListCardContent sx={{ justifyContent: 'space-between' }}>
-                                                    <Box
-                                                        sx={{
-                                                            display: 'grid',
-                                                            gridTemplateColumns: '56px 1fr',
-                                                            columnGap: 1,
-                                                            flexGrow: 1,
-                                                            alignItems: 'center',
-                                                        }}
-                                                    >
-                                                        {/* blank space where the image usually is */}
-                                                        <Box />
-                                                        {/* do not repeat manga title, only chapter name */}
-                                                        <ChapterCardMetadata
-                                                            title=""
-                                                            secondaryText={chapter.name}
-                                                            showUnreadDot={!chapter.isRead}
+                                    <Collapse in={expanded} mountOnEnter unmountOnExit>
+                                        <Stack sx={{ py: 0.5 }}>
+                                            {extraChapters.map((chapter) => (
+                                                <CardActionArea
+                                                    key={chapter.id}
+                                                    component={Link}
+                                                    to={AppRoutes.reader.path(chapter.manga.id, chapter.sourceOrder)}
+                                                    state={Chapters.getReaderOpenChapterLocationState(chapter)}
+                                                    sx={{
+                                                        color: (theme) =>
+                                                            theme.palette.text[chapter.isRead ? 'disabled' : 'primary'],
+                                                    }}
+                                                >
+                                                    <ListCardContent sx={{ justifyContent: 'space-between' }}>
+                                                        <Box
+                                                            sx={{
+                                                                display: 'grid',
+                                                                gridTemplateColumns: '56px 1fr',
+                                                                columnGap: 1,
+                                                                flexGrow: 1,
+                                                                alignItems: 'center',
+                                                            }}
+                                                        >
+                                                            <Box />
+                                                            <ChapterCardMetadata
+                                                                title=""
+                                                                secondaryText={chapter.name}
+                                                                showUnreadDot={!chapter.isRead}
+                                                                disableTooltips
+                                                            />
+                                                        </Box>
+                                                        <DownloadStateIndicator chapterId={chapter.id} />
+                                                        <ChapterDownloadRetryButton chapterId={chapter.id} />
+                                                        <ChapterDownloadButton
+                                                            chapterId={chapter.id}
+                                                            isDownloaded={chapter.isDownloaded}
                                                         />
-                                                    </Box>
-                                                    <DownloadStateIndicator chapterId={chapter.id} />
-                                                    <ChapterDownloadRetryButton chapterId={chapter.id} />
-                                                    <ChapterDownloadButton
-                                                        chapterId={chapter.id}
-                                                        isDownloaded={chapter.isDownloaded}
-                                                    />
-                                                </ListCardContent>
-                                            </CardActionArea>
-                                        ))}
+                                                    </ListCardContent>
+                                                </CardActionArea>
+                                            ))}
+                                        </Stack>
                                     </Collapse>
                                 ) : null}
                             </Card>

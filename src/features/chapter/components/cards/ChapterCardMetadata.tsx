@@ -19,6 +19,7 @@ export const ChapterCardMetadata = ({
     ternaryText,
     infoIcons,
     showUnreadDot,
+    disableTooltips,
     slotProps,
 }: {
     title: string;
@@ -26,6 +27,7 @@ export const ChapterCardMetadata = ({
     ternaryText?: string | null;
     infoIcons?: ReactNode;
     showUnreadDot?: boolean;
+    disableTooltips?: boolean;
     slotProps?: {
         title?: ComponentProps<typeof TypographyMaxLines>;
         secondaryText?: ComponentProps<typeof TypographyMaxLines>;
@@ -54,11 +56,17 @@ export const ChapterCardMetadata = ({
                 }}
             >
                 {infoIcons}
-                <CustomTooltip title={title}>
+                {disableTooltips ? (
                     <TypographyMaxLines variant="h6" component="h3" {...slotProps?.title}>
                         {title}
                     </TypographyMaxLines>
-                </CustomTooltip>
+                ) : (
+                    <CustomTooltip title={title}>
+                        <TypographyMaxLines variant="h6" component="h3" {...slotProps?.title}>
+                            {title}
+                        </TypographyMaxLines>
+                    </CustomTooltip>
+                )}
             </Stack>
 
             {secondaryText && (
@@ -81,7 +89,8 @@ export const ChapterCardMetadata = ({
                             }}
                         />
                     ) : null}
-                    <CustomTooltip title={secondaryText}>
+
+                    {disableTooltips ? (
                         <TypographyMaxLines
                             variant="caption"
                             display="block"
@@ -91,12 +100,24 @@ export const ChapterCardMetadata = ({
                         >
                             {secondaryText}
                         </TypographyMaxLines>
-                    </CustomTooltip>
+                    ) : (
+                        <CustomTooltip title={secondaryText}>
+                            <TypographyMaxLines
+                                variant="caption"
+                                display="block"
+                                lines={1}
+                                {...slotProps?.secondaryText}
+                                sx={{ maxWidth: 'fit-content', ...slotProps?.secondaryText?.sx }}
+                            >
+                                {secondaryText}
+                            </TypographyMaxLines>
+                        </CustomTooltip>
+                    )}
                 </Stack>
             )}
 
-            {ternaryText && (
-                <CustomTooltip title={ternaryText}>
+            {ternaryText &&
+                (disableTooltips ? (
                     <TypographyMaxLines
                         variant="caption"
                         display="block"
@@ -106,8 +127,19 @@ export const ChapterCardMetadata = ({
                     >
                         {ternaryText}
                     </TypographyMaxLines>
-                </CustomTooltip>
-            )}
+                ) : (
+                    <CustomTooltip title={ternaryText}>
+                        <TypographyMaxLines
+                            variant="caption"
+                            display="block"
+                            lines={1}
+                            {...slotProps?.ternaryText}
+                            sx={{ maxWidth: 'fit-content', ...slotProps?.ternaryText?.sx }}
+                        >
+                            {ternaryText}
+                        </TypographyMaxLines>
+                    </CustomTooltip>
+                ))}
         </Box>
     );
 };
