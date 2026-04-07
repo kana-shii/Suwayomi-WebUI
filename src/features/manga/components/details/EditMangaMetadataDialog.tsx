@@ -78,7 +78,7 @@ const STATUS_OPTIONS = [
     MangaStatus.OnHiatus,
 ];
 
-const PROVIDERS = ['AniList', 'MangaUpdates'];
+const PROVIDERS = ['MangaBaka', 'MangaUpdates', 'MyAnimeList', 'Anilist'];
 
 const EditTab = ({ manga, onClose }: { manga: EditableManga; onClose: () => void }) => {
     const { t } = useLingui();
@@ -209,11 +209,11 @@ const EditTab = ({ manga, onClose }: { manga: EditableManga; onClose: () => void
                         renderTags={(value, getTagProps) =>
                             value.map((option, index) => (
                                 <Chip
-                                    key={option}
                                     variant="outlined"
                                     label={option}
                                     size="small"
                                     {...getTagProps({ index })}
+                                    key={option}
                                 />
                             ))
                         }
