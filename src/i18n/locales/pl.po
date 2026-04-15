@@ -13,6 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
+"X-Message-Format: ICU\n"
 "X-Generator: Weblate 5.17-dev\n"
 
 #: src/features/navigation-bar/NavigationBar.constants.ts
@@ -3123,7 +3124,7 @@ msgstr ""
 #: src/features/chapter/components/actions/ChaptersDownloadActionMenuItems.tsx
 msgid "{count, plural, one {Next chapter} other {Next # chapters}}"
 msgstr ""
-"{count, plural, one {Następny rozdział} fews {Następne # rozdziały} other "
+"{count, plural, one {Następny rozdział} few {Następne # rozdziały} other "
 "{Następne # rozdziałów}}"
 
 #: src/features/manga/Manga.constants.ts
